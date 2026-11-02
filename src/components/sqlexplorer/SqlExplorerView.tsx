@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { BookOpen, Terminal } from 'lucide-react';
+import { Terminal } from 'lucide-react';
 import {
   INDEX_METHODS,
   INDEX_ORDER,
   SQL_EXPLORER_EXAMPLES,
 } from '../../data/indexCatalog';
 import { IndexTypeId } from '../../types';
-import { Card, Chip, CodeBlock, CopyButton, Note, PageHeader, Tag } from '../ui/primitives';
+import { Card, Chip, CodeBlock, CopyButton, PageHeader, Tag } from '../ui/primitives';
 
 export const SqlExplorerView: React.FC = () => {
   const [filterIndex, setFilterIndex] = useState<IndexTypeId | 'all'>('all');
@@ -69,46 +69,19 @@ export const SqlExplorerView: React.FC = () => {
                 </div>
               </div>
 
-              <div className="mt-4 border-t border-line-soft pt-3">
-                <Note tone="neutral" icon={Terminal} className="text-[13px]">
-                  <strong className="text-ink">Rencana Eksekusi: </strong>
-                  {item.expectedPlanNote}
-                </Note>
+              <div className="mt-4 border-t border-line-soft pt-3 text-[13px] text-ink-2">
+                <div className="flex items-start gap-2">
+                  <Terminal className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" />
+                  <div>
+                    <strong className="text-ink">Rencana Eksekusi: </strong>
+                    {item.expectedPlanNote}
+                  </div>
+                </div>
               </div>
             </Card>
           );
         })}
       </div>
-
-      {/* Maintenance & DROP INDEX Reference */}
-      <Card className="p-5 sm:p-6">
-        <div className="mb-4 flex items-center gap-2">
-          <BookOpen className="h-4 w-4 text-accent" />
-          <h3 className="text-[17px] font-semibold tracking-tight text-ink">
-            Manajemen &amp; Pemeliharaan Index PostgreSQL
-          </h3>
-        </div>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3 font-mono text-[13px]">
-          <div className="rounded-2xl bg-fill p-4">
-            <div className="mb-1.5 text-[12px] font-sans font-medium text-ink-2">Menghapus Index</div>
-            <code className="text-bad">
-              DROP INDEX IF EXISTS idx_film_rental_rate;
-            </code>
-          </div>
-          <div className="rounded-2xl bg-fill p-4">
-            <div className="mb-1.5 text-[12px] font-sans font-medium text-ink-2">Cek Ukuran Index di Disk</div>
-            <code className="text-accent">
-              SELECT pg_size_pretty(pg_relation_size('idx_film_rental_rate'));
-            </code>
-          </div>
-          <div className="rounded-2xl bg-fill p-4">
-            <div className="mb-1.5 text-[12px] font-sans font-medium text-ink-2">Nonaktifkan Seq Scan (Uji Index)</div>
-            <code className="text-ok">
-              SET enable_seqscan = OFF;
-            </code>
-          </div>
-        </div>
-      </Card>
     </div>
   );
 };

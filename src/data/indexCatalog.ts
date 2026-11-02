@@ -560,6 +560,179 @@ WHERE title LIKE '%DINOSAUR%';`,
     expectedPlanNote:
       'Bitmap Index Scan memeriksa signature bit setiap baris, diikuti Bitmap Heap Scan dengan "Rows Removed by Index Recheck" (False Positives).',
   },
+  {
+    id: 'sql-btree-partial',
+    indexType: 'btree',
+    title: 'Partial B-Tree Index (Klausul WHERE)',
+    category: 'TUNING & ADVANCED',
+    tableContext: 'rental (rental_id, return_date, customer_id)',
+    description:
+      'Mengindeks hanya baris yang memenuhi predikat tertentu (misal rental yang belum dikembalikan WHERE return_date IS NULL). Sangat menghemat ukuran storage dan beban overhead update.',
+    sql: `-- Membuat Partial Index hanya untuk peminjaman aktif yang belum dikembalikan
+CREATE INDEX idx_rental_unreturned
+ON rental (customer_id)
+WHERE return_date IS NULL;
+
+-- Query dengan predikat cocok langsung menggunakan Index Scan parsial:
+EXPLAIN ANALYZE
+SELECT rental_id, customer_id, rental_date
+FROM rental
+WHERE return_date IS NULL AND customer_id = 388;`,
+    expectedPlanNote:
+      'PostgreSQL mendeteksi predikat query mencakup predikat index partial, sehingga Index Scan dieksekusi hanya pada subset baris aktif yang berukuran sangat kecil.',
+  },
+  {
+    id: 'sql-btree-expression',
+    indexType: 'btree',
+    title: 'Expression / Functional Index (LOWER, komputasi)',
+    category: 'TUNING & ADVANCED',
+    tableContext: 'customer (kolom teks email)',
+    description:
+      'Mengindeks hasil ekspresi fungsi kalkulasi. B-Tree standar pada kolom email akan diabaikan optimizer jika query memanggil LOWER(email); index ekspresi mengatasi limitasi ini.',
+    sql: `-- Membuat Expression Index pada hasil fungsi LOWER()
+CREATE INDEX idx_customer_lower_email
+ON customer (LOWER(email));
+
+-- Query pencarian case-insensitive menjadi optimal tanpa Seq Scan:
+EXPLAIN ANALYZE
+SELECT customer_id, first_name, last_name, email
+FROM customer
+WHERE LOWER(email) = 'jared.ely@sakilacustomer.org';`,
+    expectedPlanNote:
+      'Optimizer memilih Index Scan pada idx_customer_lower_email tanpa mengevaluasi fungsi LOWER() berulang kali pada setiap baris heap tabel.',
+  },
+  {
+    id: 'sql-btree-unique',
+    indexType: 'btree',
+    title: 'Unique B-Tree Index (Integritas Nilai Unik)',
+    category: 'CREATE INDEX',
+    tableContext: 'customer (kolom email)',
+    description:
+      'Memastikan integritas tidak ada duplikasi data sekaligus mempercepat lookup ekuivalensi. PostgreSQL otomatis membuat Unique B-Tree untuk PRIMARY KEY dan UNIQUE constraints.',
+    sql: `-- Membuat Unique B-Tree Index
+CREATE UNIQUE INDEX idx_customer_email_unique
+ON customer (email);
+
+-- Query lookup satu baris unik
+EXPLAIN ANALYZE
+SELECT customer_id, first_name, last_name
+FROM customer
+WHERE email = 'mary.smith@sakilacustomer.org';`,
+    expectedPlanNote:
+      'Index Scan berhenti seketika setelah menemukan baris yang dicocokkan karena jaminan integritas unik memastikan tidak ada duplikasi nilai.',
+  },
+  {
+    id: 'sql-btree-covering',
+    indexType: 'btree',
+    title: 'Covering Index B-Tree (Index-Only Scan dengan INCLUDE)',
+    category: 'TUNING & ADVANCED',
+    tableContext: 'payment (customer_id, amount, payment_date)',
+    description:
+      'Menambahkan payload non-key ke level leaf menggunakan klausa INCLUDE. Mengizinkan query dieksekusi murni dari index tanpa membaca data heap table (Index-Only Scan).',
+    sql: `-- Membuat Covering Index: customer_id sebagai key pencarian, amount sebagai payload data
+CREATE INDEX idx_payment_customer_amount
+ON payment (customer_id)
+INCLUDE (amount);
+
+-- Query mengambil seluruh kolom yang dibutuhkan langsung dari leaf node:
+EXPLAIN ANALYZE
+SELECT customer_id, amount
+FROM payment
+WHERE customer_id = 341;`,
+    expectedPlanNote:
+      'PostgreSQL memilih Index Only Scan dengan Heap Fetches: 0, mengeliminasi pembacaan halaman heap tabel selama Visibility Map menandai blok bersih.',
+  },
+  {
+    id: 'sql-gin-jsonb-path',
+    indexType: 'gin',
+    title: 'GIN jsonb_path_ops untuk Query Containment JSONB',
+    category: 'TUNING & ADVANCED',
+    tableContext: 'customer_orders (kolom metadata jsonb)',
+    description:
+      'Menggunakan operator class jsonb_path_ops yang membuat hash khusus untuk pasangan path-value daun, menghasilkan ukuran index jauh lebih ramping dibanding jsonb_ops default.',
+    sql: `-- Membuat GIN Index dengan operator class jsonb_path_ops
+CREATE INDEX idx_orders_metadata_path_ops
+ON customer_orders USING GIN (metadata jsonb_path_ops);
+
+-- Query pencarian hierarki key-value (@>):
+EXPLAIN ANALYZE
+SELECT order_id, customer_id
+FROM customer_orders
+WHERE metadata @> '{"shipping": {"status": "delivered"}, "priority": "high"}';`,
+    expectedPlanNote:
+      'Bitmap Index Scan mencocokkan hash path dokumen JSONB secara ringkas dan cepat, menghemat konsumsi memori cache index.',
+  },
+  {
+    id: 'sql-gist-exclude',
+    indexType: 'gist',
+    title: 'GiST Exclusion Constraint (Pencegahan Double-Booking)',
+    category: 'TUNING & ADVANCED',
+    tableContext: 'room_reservations (kolom waktu tsrange & room_id)',
+    description:
+      'Menggunakan GiST dengan batasan EXCLUDE untuk mencegah reservasi waktu tumpang-tindih (operator &&) pada ruangan yang sama secara otomatis di level database.',
+    sql: `-- Ekstensi pendukung btree_gist untuk kombinasi tipe skalar integer dan tsrange
+CREATE EXTENSION IF NOT EXISTS btree_gist;
+
+-- Mencegah tabrakan pemesanan jadwal ruangan
+ALTER TABLE room_reservations
+ADD CONSTRAINT no_overlapping_reservations
+EXCLUDE USING GIST (
+  room_id WITH =,
+  during WITH &&
+);
+
+-- Pengujian pencarian konflik rentang waktu reservasi:
+EXPLAIN ANALYZE
+SELECT reservation_id, room_id
+FROM room_reservations
+WHERE room_id = 101 AND during && tsrange('2026-06-01 10:00', '2026-06-01 12:00');`,
+    expectedPlanNote:
+      'GiST Index Scan memangkas pohon bounding rentang waktu untuk menemukan konflik reservasi tanpa sequential scan.',
+  },
+  {
+    id: 'sql-brin-autosummarize',
+    indexType: 'brin',
+    title: 'BRIN Tuning: pages_per_range & autosummarize',
+    category: 'TUNING & ADVANCED',
+    tableContext: 'sensor_telemetry (miliaran baris log IoT)',
+    description:
+      'Tuning performa BRIN: memperkecil pages_per_range untuk akurasi eliminasi blok yang lebih presisi dan mengaktifkan autosummarize agar ringkasan min-max diperbarui otomatis.',
+    sql: `-- Membuat BRIN Index dengan tuning parameter range dan autosummarize otomatis
+CREATE INDEX idx_sensor_time_brin
+ON sensor_telemetry USING BRIN (recorded_at)
+WITH (pages_per_range = 64, autosummarize = on);
+
+-- Pembaruan ringkasan manual sewaktu-waktu:
+SELECT brin_summarize_new_values('idx_sensor_time_brin');
+
+-- Uji query rentang tanggal pada tabel berukuran gigabyte:
+EXPLAIN ANALYZE
+SELECT AVG(temperature), MAX(humidity)
+FROM sensor_telemetry
+WHERE recorded_at >= '2026-01-01' AND recorded_at < '2026-01-02';`,
+    expectedPlanNote:
+      'Bitmap Index Scan membaca ringkasan min-max per rentang 64 halaman, melewati ribuan blok disk yang tidak masuk kriteria tanggal sensor.',
+  },
+  {
+    id: 'sql-spgist-inet',
+    indexType: 'spgist',
+    title: 'SP-GiST Index pada Subnet & Alamat Jaringan (inet)',
+    category: 'CREATE INDEX',
+    tableContext: 'access_logs (kolom client_ip bertipe inet)',
+    description:
+      'SP-GiST mengorganisasi alamat IP ke dalam Radix Tree hierarkis non-overlapping. Sangat efisien untuk query subset atau containment subnet CIDR (operator <<=).',
+    sql: `-- Membuat SP-GiST Index pada kolom alamat IP / inet
+CREATE INDEX idx_access_client_ip_spgist
+ON access_logs USING SPGIST (client_ip);
+
+-- Mencari seluruh request dari blok subnet tertentu (CIDR containment):
+EXPLAIN ANALYZE
+SELECT log_id, client_ip, request_path
+FROM access_logs
+WHERE client_ip <<= inet '192.168.1.0/24';`,
+    expectedPlanNote:
+      'SP-GiST Index Scan menelusuri prefix bit subnet IP secara deterministik tanpa tumpang-tindih partisi.',
+  },
 ];
 
 export const PERF_LAB_SCENARIOS: PerfScenario[] = [

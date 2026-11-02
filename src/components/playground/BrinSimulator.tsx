@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { ArrowDownUp, CheckCircle2, HardDrive, Info, Shuffle, XCircle } from 'lucide-react';
+import { ArrowDownUp, CheckCircle2, HardDrive, Shuffle, XCircle } from 'lucide-react';
 import { buildBrinBlocks, searchBrinRange } from '../../engines/otherIndexEngines';
-import { Card, cx, Field, inputCls, Note, Segmented, Stat, Tag } from '../ui/primitives';
+import { Card, cx, Field, inputCls, Segmented, Stat, Tag } from '../ui/primitives';
 import { BrinVisualCanvas } from './BrinVisualCanvas';
 
 export const BrinSimulator: React.FC = () => {
@@ -180,35 +180,6 @@ export const BrinSimulator: React.FC = () => {
           })}
         </div>
       </Card>
-
-      {/* Educational Insight Note */}
-      <Note
-        tone={isCorrelated ? 'ok' : 'warn'}
-        icon={Info}
-        title={
-          isCorrelated
-            ? 'Mengapa BRIN Sangat Efektif di Sini?'
-            : 'Mengapa BRIN Kurang Efektif Saat Korelasi Fisik Rendah?'
-        }
-      >
-        {isCorrelated ? (
-          <p>
-            Karena data berurutan secara fisik di disk (korelasi tinggi), rentang{' '}
-            <code className="rounded bg-surface px-1.5 py-0.5 font-mono text-ink">[Min, Max]</code> tiap blok
-            tidak tumpang-tindih. BRIN berhasil mengeliminasi{' '}
-            <strong>{res.eliminatedBlocks.length} dari {blocks.length} blok</strong> tanpa perlu membaca tabel!
-          </p>
-        ) : (
-          <p>
-            Ketika data tersebar acak, setiap blok memuat rentang nilai yang sangat lebar (misal [101..208]).
-            Akibatnya rentang query <code className="rounded bg-surface px-1.5 py-0.5 font-mono text-ink">[{low}..{high}]</code>{' '}
-            berpotongan dengan hampir seluruh blok, sehingga eliminasi blok gagal bekerja optimal.
-          </p>
-        )}
-        <p className="mt-2 border-t border-line-soft/60 pt-2 text-[12.5px] text-ink-2">
-          <strong>Sifat Lossy &amp; Heap Recheck:</strong> BRIN bersifat <em>lossy</em> karena index hanya menyimpan ringkasan rentang per blok, bukan pointer ke baris individual. Ketika sebuah blok lolos eliminasi, PostgreSQL menjalankan <code className="font-mono text-[11.5px] bg-surface px-1 py-0.5 rounded">Bitmap Heap Scan</code> dan membaca baris di blok tersebut untuk memverifikasi (<em>recheck</em>) apakah baris benar-benar memenuhi kondisi WHERE.
-        </p>
-      </Note>
     </div>
   );
 };

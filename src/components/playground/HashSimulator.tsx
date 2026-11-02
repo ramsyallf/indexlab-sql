@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertTriangle, ChevronRight, Info, Plus, RotateCcw, Search, X } from 'lucide-react';
+import { AlertTriangle, ChevronRight, Plus, RotateCcw, Search, X } from 'lucide-react';
 import {
   buildHashBuckets,
   computeEducationalHash,
@@ -7,7 +7,7 @@ import {
   PRESET_HASH_ITEMS,
   searchHashIndex,
 } from '../../engines/otherIndexEngines';
-import { Button, Card, cx, Field, inputCls, Note, Segmented, StepPlayer, Tag } from '../ui/primitives';
+import { Button, Card, cx, Field, inputCls, Segmented, StepPlayer, Tag } from '../ui/primitives';
 import { HashVisualCanvas } from './HashVisualCanvas';
 
 type Op = 'search' | 'insert' | 'range';
@@ -116,10 +116,16 @@ export const HashSimulator: React.FC = () => {
         </form>
 
         {rangeTried && (
-          <Note tone="bad" icon={AlertTriangle} title="Hash index tidak dapat dipakai" className="mt-4" role="alert">
-            Fungsi hash mengacak urutan nilai, sehingga nilai yang berdekatan tidak disimpan bersebelahan. Range, BETWEEN, dan
-            ORDER BY selalu jatuh ke Seq Scan.
-          </Note>
+          <div
+            className="mt-4 flex items-start gap-2.5 rounded-2xl border border-bad/30 bg-bad/5 p-4 text-[13px] text-bad"
+            role="alert"
+          >
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-bad" />
+            <div>
+              <strong className="font-semibold">Hash index tidak dapat dipakai: </strong>
+              Fungsi hash mengacak urutan nilai, sehingga nilai yang berdekatan tidak disimpan bersebelahan. Range, BETWEEN, dan ORDER BY selalu jatuh ke Seq Scan.
+            </div>
+          </div>
         )}
       </Card>
 
@@ -241,23 +247,6 @@ export const HashSimulator: React.FC = () => {
         idleTitle="Jalankan lookup untuk melihat langkahnya"
         idleText="Klik nilai di bucket mana pun untuk langsung mencarinya."
       />
-
-      <Note tone="neutral" icon={Info} title="Prinsip Hash Indexing &amp; Resolusi Collision (Model Edukatif)">
-        <p>
-          Simulator ini menggunakan fungsi hash edukatif 32-bit (FNV-1a) untuk mendemonstrasikan prinsip determinisme, pemetaan bucket via modulo, dan penanganan tabrakan (*collision*). Pada PostgreSQL sungguhan, fungsi hash yang digunakan adalah fungsi internal seperti <code className="font-mono text-[11.5px]">hashtext()</code>.
-        </p>
-        <div className="mt-2 space-y-1 border-t border-line-soft/60 pt-2 text-[12.5px] text-ink-2">
-          <p>
-            • <strong>Kompleksitas Pencarian:</strong> Rata-rata pencarian berlangsung efisien dalam \(O(1)\). Namun waktu ini adalah estimasi rata-rata ideal; bila terjadi banyak collision, PostgreSQL harus menelusuri rantai overflow page yang dapat menambah waktu pembacaan.
-          </p>
-          <p>
-            • <strong>Hanya Mendukung Equality (=):</strong> Karena fungsi hash mengacak distribusi nilai tanpa mempertahankan urutan data, Hash index tidak dapat memproses query rentang (<code className="font-mono text-[11.5px]">&lt;, &gt;, BETWEEN</code>) maupun <code className="font-mono text-[11.5px]">ORDER BY</code>.
-          </p>
-          <p>
-            • <strong>Collision &amp; Recheck:</strong> Ketika dua nilai berbeda menghasilkan kode hash atau nomor bucket yang sama (hash collision), entri disimpan pada overflow page. PostgreSQL selalu membaca baris tabel heap untuk memverifikasi nilai asli tuple guna memastikan akurasi data.
-          </p>
-        </div>
-      </Note>
     </div>
   );
 };

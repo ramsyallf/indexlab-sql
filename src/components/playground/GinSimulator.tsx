@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Info, Plus, RotateCcw } from 'lucide-react';
+import { Plus, RotateCcw } from 'lucide-react';
 import { buildGinInvertedIndex, GinDocument, PRESET_GIN_DOCS, searchGinIndex } from '../../engines/otherIndexEngines';
-import { Button, Card, Chip, cx, Field, inputCls, Note, Segmented, Tag } from '../ui/primitives';
+import { Button, Card, Chip, cx, Field, inputCls, Segmented, Tag } from '../ui/primitives';
 import { GinVisualCanvas } from './GinVisualCanvas';
 
 export const GinSimulator: React.FC = () => {
@@ -163,16 +163,6 @@ export const GinSimulator: React.FC = () => {
           </form>
         </Card>
       </div>
-
-      <Note tone="accent" icon={Info} title="Prinsip Inverted Index &amp; Posting List pada GIN">
-        <p>
-          {res.steps[res.steps.length - 1]?.explanation ??
-            'Pilih minimal satu token untuk melihat bagaimana GIN menggabungkan posting list.'}
-        </p>
-        <p className="mt-2 border-t border-line-soft/60 pt-2 text-[12.5px] text-ink-2">
-          <strong>Bagaimana GIN Bekerja di PostgreSQL:</strong> GIN (Generalized Inverted Index) memecah nilai majemuk (Array, JSONB, atau tsvector dokumen) menjadi nilai komponen individual (token). Operator yang didukung terikat erat pada tipe data dan <em>operator class</em>: pada tipe array (<code className="font-mono text-[11.5px] bg-surface px-1 py-0.5 rounded">array_ops</code>), operator <code className="font-mono text-[11.5px] bg-surface px-1 py-0.5 rounded">@&gt;</code> (AND) melakukan irisan (<em>bitmap intersection</em>), sedangkan <code className="font-mono text-[11.5px] bg-surface px-1 py-0.5 rounded">&amp;&amp;</code> (OR) melakukan penggabungan (<em>bitmap union</em>). Pada JSONB digunakan <code className="font-mono text-[11.5px] bg-surface px-1 py-0.5 rounded">jsonb_ops</code>, pada teks dokumen digunakan <code className="font-mono text-[11.5px] bg-surface px-1 py-0.5 rounded">tsvector_ops</code> (<code className="font-mono text-[11.5px]">@@</code>), dan pada pencarian substring trigram digunakan <code className="font-mono text-[11.5px] bg-surface px-1 py-0.5 rounded">gin_trgm_ops</code>.
-        </p>
-      </Note>
     </div>
   );
 };

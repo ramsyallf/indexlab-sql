@@ -54,7 +54,7 @@ export interface SqlExampleItem {
   id: string;
   indexType: IndexTypeId;
   title: string;
-  category: 'CREATE INDEX' | 'EXPLAIN ANALYZE' | 'EXTENSION & TUNING' | 'DROP & MAINTENANCE';
+  category: 'CREATE INDEX' | 'EXPLAIN ANALYZE' | 'EXTENSION & TUNING' | 'TUNING & ADVANCED' | 'DROP & MAINTENANCE';
   tableContext: string;
   description: string;
   sql: string;

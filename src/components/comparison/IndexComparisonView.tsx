@@ -3,13 +3,12 @@ import {
   ArrowLeftRight,
   Check,
   HardDrive,
-  Info,
   X,
   Zap,
 } from 'lucide-react';
 import { INDEX_METHODS, INDEX_ORDER } from '../../data/indexCatalog';
 import { IndexTypeId } from '../../types';
-import { Button, Card, cx, Field, Note, PageHeader, Select, Tag } from '../ui/primitives';
+import { Button, Card, cx, Field, PageHeader, Select, Tag } from '../ui/primitives';
 
 export const IndexComparisonView: React.FC = () => {
   const [leftId, setLeftId] = useState<IndexTypeId>('btree');
@@ -264,15 +263,6 @@ export const IndexComparisonView: React.FC = () => {
           </table>
         </div>
       </Card>
-
-      <Note tone="neutral" icon={Info} title="Prinsip Pemilihan Index & Catatan Ukuran Storage">
-        <p>
-          Tidak ada satu jenis index yang selalu lebih cepat untuk semua situasi. Pemilihan index selalu merupakan pertimbangan trade-off antara pola klausa WHERE / ORDER BY, selektivitas baris, korelasi urutan fisik di disk, ukuran ruang penyimpanan, dan frekuensi operasi tulis (INSERT, UPDATE, DELETE).
-        </p>
-        <p className="mt-2 text-[12.5px] text-ink-2">
-          <strong>Penting tentang Ukuran Index:</strong> Ukuran index bukan merupakan sifat mutlak dari suatu metode index, melainkan estimasi konseptual edukatif. Ukuran riil di PostgreSQL dipengaruhi oleh tipe data kolom, panjang key, kardinalitas nilai unik, pengaturan <code className="font-mono text-[11.5px]">fillfactor</code>, dan overhead per halaman blok 8KB.
-        </p>
-      </Note>
     </div>
   );
 };

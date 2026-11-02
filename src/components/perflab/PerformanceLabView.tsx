@@ -20,7 +20,7 @@ import {
 import { INDEX_METHODS, PERF_LAB_SCENARIOS } from '../../data/indexCatalog';
 import { simulateQueryPerformance } from '../../engines/otherIndexEngines';
 import { IndexTypeId } from '../../types';
-import { Card, Field, Note, PageHeader, Select, Stat, Tag } from '../ui/primitives';
+import { Card, Field, PageHeader, Select, Stat, Tag } from '../ui/primitives';
 import { P } from '../../ui/theme';
 
 export const PerformanceLabView: React.FC = () => {
@@ -184,9 +184,9 @@ export const PerformanceLabView: React.FC = () => {
               </Field>
             </div>
 
-            <Note tone="accent" icon={Info} className="text-[13px]">
+            <p className="text-[13px] leading-relaxed text-ink-2">
               {scenario.explanationId}
-            </Note>
+            </p>
           </div>
         </div>
       </Card>
@@ -344,20 +344,6 @@ export const PerformanceLabView: React.FC = () => {
           </div>
         </Card>
       </div>
-
-      <Note tone="neutral" icon={Info} title="Transparansi Edukasi: Model Simulasi vs PostgreSQL Sungguhan">
-        <p>
-          Seluruh metrik performa (estimasi waktu milidetik, jumlah blok dibaca, dan output EXPLAIN ANALYZE) merupakan <strong>simulasi algoritmik konseptual</strong> untuk memvisualisasikan kompleksitas O(log N) vs O(N) dan penghematan disk I/O.
-        </p>
-        <div className="mt-2 space-y-1.5 border-t border-line-soft/60 pt-2 text-[12.5px] text-ink-2">
-          <p>
-            • <strong>Simulasi vs Benchmark Riil:</strong> Angka waktu eksekusi bukan hasil stopwatch fisik PostgreSQL engine dan tidak merefleksikan hardware caching, buffer pool, atau konkurensi multi-user riil. Mahasiswa disarankan menjalankan query di DBeaver/psql untuk melihat hasil produksi sesungguhnya.
-          </p>
-          <p>
-            • <strong>Perbedaan cost vs actual time pada EXPLAIN ANALYZE:</strong> Pada PostgreSQL sungguhan, nilai <code className="font-mono text-[11.5px] bg-surface px-1 py-0.5 rounded">cost</code> adalah estimasi perkiraan optimizer dalam unit biaya arbitrer (berdasarkan asumsi pembacaan halaman disk), sedangkan <code className="font-mono text-[11.5px] bg-surface px-1 py-0.5 rounded">actual time</code> adalah waktu eksekusi riil dalam milidetik yang diukur karena EXPLAIN ANALYZE benar-benar mengeksekusi query. Pada simulasi web ini, kedua angka dimodelkan secara matematis untuk kebutuhan komparasi visual.
-          </p>
-        </div>
-      </Note>
     </div>
   );
 };
