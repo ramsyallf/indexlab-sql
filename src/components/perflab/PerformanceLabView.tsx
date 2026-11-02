@@ -235,9 +235,14 @@ export const PerformanceLabView: React.FC = () => {
 
               {/* EXPLAIN Output */}
               <div className="mt-4 rounded-2xl bg-fill p-3.5">
-                <div className="mb-2 flex items-center gap-1.5 font-mono text-[11px] font-semibold text-ink-2">
-                  <Terminal className="h-3.5 w-3.5 text-accent" />
-                  Simulasi Output EXPLAIN ANALYZE
+                <div className="mb-2 flex flex-wrap items-center justify-between gap-1 font-mono text-[11px] text-ink-2">
+                  <div className="flex items-center gap-1.5 font-semibold">
+                    <Terminal className="h-3.5 w-3.5 text-accent" />
+                    Simulasi Output EXPLAIN ANALYZE
+                  </div>
+                  <span className="rounded bg-slate-200/90 px-1.5 py-0.5 text-[10px] font-sans font-medium text-ink-2">
+                    Simulasi — bukan hasil eksekusi PostgreSQL
+                  </span>
                 </div>
                 <pre className="overflow-x-auto whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-ink-2">
                   {p.data.explainAnalyzeText.join('\n')}
@@ -255,11 +260,16 @@ export const PerformanceLabView: React.FC = () => {
       {/* Visual Charts */}
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <Card className="p-5 sm:p-6">
-          <div className="mb-4 flex items-center gap-2">
-            <Database className="h-4 w-4 text-accent" />
-            <h3 className="text-[17px] font-semibold tracking-tight text-ink">
-              Jumlah Baris yang Dipindai (Rows Scanned)
-            </h3>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Database className="h-4 w-4 text-accent" />
+              <h3 className="text-[17px] font-semibold tracking-tight text-ink">
+                Jumlah Baris yang Dipindai (Rows Scanned)
+              </h3>
+            </div>
+            <Tag tone="neutral" className="text-[11px]">
+              Simulasi — bukan hasil eksekusi PostgreSQL
+            </Tag>
           </div>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -290,11 +300,16 @@ export const PerformanceLabView: React.FC = () => {
         </Card>
 
         <Card className="p-5 sm:p-6">
-          <div className="mb-4 flex items-center gap-2">
-            <Gauge className="h-4 w-4 text-ok" />
-            <h3 className="text-[17px] font-semibold tracking-tight text-ink">
-              Waktu Simulasi (Konseptual ms) vs Estimasi Ukuran Index (KB)
-            </h3>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Gauge className="h-4 w-4 text-ok" />
+              <h3 className="text-[17px] font-semibold tracking-tight text-ink">
+                Waktu Simulasi (Konseptual ms) vs Estimasi Ukuran Index (KB)
+              </h3>
+            </div>
+            <Tag tone="neutral" className="text-[11px]">
+              Simulasi — bukan hasil eksekusi PostgreSQL
+            </Tag>
           </div>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -331,7 +346,17 @@ export const PerformanceLabView: React.FC = () => {
       </div>
 
       <Note tone="neutral" icon={Info} title="Transparansi Edukasi: Model Simulasi vs PostgreSQL Sungguhan">
-        Seluruh metrik performa (estimasi waktu milidetik, jumlah blok dibaca, dan output EXPLAIN ANALYZE) merupakan <strong>simulasi algoritmik konseptual</strong> untuk memvisualisasikan kompleksitas O(log N) vs O(N) dan penghematan disk I/O. Angka waktu eksekusi bukan hasil stopwatch fisik PostgreSQL engine dan tidak merefleksikan hardware caching, buffer pool, atau konkurensi multi-user riil.
+        <p>
+          Seluruh metrik performa (estimasi waktu milidetik, jumlah blok dibaca, dan output EXPLAIN ANALYZE) merupakan <strong>simulasi algoritmik konseptual</strong> untuk memvisualisasikan kompleksitas O(log N) vs O(N) dan penghematan disk I/O.
+        </p>
+        <div className="mt-2 space-y-1.5 border-t border-line-soft/60 pt-2 text-[12.5px] text-ink-2">
+          <p>
+            • <strong>Simulasi vs Benchmark Riil:</strong> Angka waktu eksekusi bukan hasil stopwatch fisik PostgreSQL engine dan tidak merefleksikan hardware caching, buffer pool, atau konkurensi multi-user riil. Mahasiswa disarankan menjalankan query di DBeaver/psql untuk melihat hasil produksi sesungguhnya.
+          </p>
+          <p>
+            • <strong>Perbedaan cost vs actual time pada EXPLAIN ANALYZE:</strong> Pada PostgreSQL sungguhan, nilai <code className="font-mono text-[11.5px] bg-surface px-1 py-0.5 rounded">cost</code> adalah estimasi perkiraan optimizer dalam unit biaya arbitrer (berdasarkan asumsi pembacaan halaman disk), sedangkan <code className="font-mono text-[11.5px] bg-surface px-1 py-0.5 rounded">actual time</code> adalah waktu eksekusi riil dalam milidetik yang diukur karena EXPLAIN ANALYZE benar-benar mengeksekusi query. Pada simulasi web ini, kedua angka dimodelkan secara matematis untuk kebutuhan komparasi visual.
+          </p>
+        </div>
       </Note>
     </div>
   );

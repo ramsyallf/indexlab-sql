@@ -63,7 +63,7 @@ export const BrinSimulator: React.FC = () => {
       {/* Summary Metrics */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Stat
-          label="Blok Dieliminasi (Skip I/O)"
+          label="Blok Dieliminasi (Skip Heap Scan)"
           value={`${res.eliminatedBlocks.length} / ${blocks.length} Blok`}
           tone={res.eliminatedBlocks.length > 0 ? 'ok' : 'neutral'}
         />
@@ -84,14 +84,14 @@ export const BrinSimulator: React.FC = () => {
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-line-soft pb-3">
           <div>
             <h3 className="text-[17px] font-bold tracking-tight text-ink">
-              Arsitektur BRIN: Pemetaan Min-Max &amp; Eliminasi I/O
+              Arsitektur BRIN: Pemetaan Min-Max &amp; Eliminasi Blok
             </h3>
             <p className="text-[12.5px] text-ink-2">
-              Blok yang rentang [Min..Max]-nya di luar batas query ({low}..{high}) langsung di-skip tanpa membaca blok fisik dari disk.
+              Blok dieliminasi berdasarkan ringkasan BRIN sehingga tidak perlu dipindai sebagai bagian dari heap scan untuk query ini ({low}..{high}).
             </p>
           </div>
           <Tag tone={res.eliminatedBlocks.length > 0 ? 'ok' : 'warn'}>
-            {res.eliminatedBlocks.length} Blok Skip I/O
+            {res.eliminatedBlocks.length} Blok Dilewati
           </Tag>
         </div>
         <BrinVisualCanvas

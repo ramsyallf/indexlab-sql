@@ -28,7 +28,13 @@ export interface HashTraceStep {
   isCollisionWalk: boolean;
 }
 
-export function computePostgresStyleHash(input: string, bucketCount: number = 8): {
+/**
+ * Fungsi hash edukatif 32-bit berbasis algoritma FNV-1a.
+ * Digunakan sebagai model pembelajaran untuk mendemonstrasikan determinisme hash,
+ * pemetaan bucket (hash % bucketCount), penanganan collision, dan equality lookup.
+ * Catatan: Ini bukan implementasi fungsi internal PostgreSQL (hashtext).
+ */
+export function computeEducationalHash(input: string, bucketCount: number = 8): {
   rawHash: number;
   hashHex: string;
   bucketIndex: number;
@@ -65,7 +71,7 @@ export function buildHashBuckets(
     entries: [],
   }));
   for (const item of items) {
-    const { hashHex, bucketIndex } = computePostgresStyleHash(item.key, bucketCount);
+    const { hashHex, bucketIndex } = computeEducationalHash(item.key, bucketCount);
     const exists = buckets[bucketIndex].entries.findIndex((e) => e.key === item.key);
     const entry: HashEntry = {
       key: item.key,
@@ -91,13 +97,13 @@ export function searchHashIndex(
   found: HashEntry | null;
 } {
   const bucketCount = buckets.length;
-  const { hashHex, bucketIndex } = computePostgresStyleHash(searchKey, bucketCount);
+  const { hashHex, bucketIndex } = computeEducationalHash(searchKey, bucketCount);
   const steps: HashTraceStep[] = [];
 
   steps.push({
     stepIndex: 1,
-    title: `Hitung Hash Function h("${searchKey}")`,
-    explanation: `Nilai "${searchKey}" diproses oleh fungsi hash 32-bit menghasilkan kode ${hashHex}. Operasi modulo (${hashHex} mod ${bucketCount}) mengarahkan pencarian langsung ke Bucket #${bucketIndex} dalam waktu O(1).`,
+    title: `Hitung Fungsi Hash h("${searchKey}")`,
+    explanation: `Nilai "${searchKey}" diproses oleh fungsi hash simulasi 32-bit menghasilkan kode ${hashHex}. Operasi modulo (${hashHex} mod ${bucketCount}) mengarahkan pencarian langsung ke Bucket #${bucketIndex} (rata-rata O(1)).`,
     computedHashHex: hashHex,
     activeBucketIndex: bucketIndex,
     checkedEntryIndex: null,

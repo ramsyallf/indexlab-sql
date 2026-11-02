@@ -98,7 +98,7 @@ export const BrinVisualCanvas: React.FC<BrinVisualCanvasProps> = ({
                 fontWeight={700}
                 fontFamily={SANS}
               >
-                {isEliminated ? 'SKIP (0 I/O)' : 'INSPEKSI BLOK'}
+                {isEliminated ? 'ELIMINASI (SKIP)' : 'INSPEKSI HEAP'}
               </text>
 
               {/* Connector line between summary and disk page */}

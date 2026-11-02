@@ -40,7 +40,7 @@ export const GistSimulator: React.FC = () => {
       <div className="grid gap-5 lg:grid-cols-12">
         <Card className="p-5 sm:p-6 lg:col-span-7">
           <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-            <h3 className="text-[17px] font-semibold tracking-tight">Bounding rectangle (R-Tree)</h3>
+            <h3 className="text-[17px] font-semibold tracking-tight">Simulasi konseptual GiST dengan R-Tree / MBR</h3>
             <span className="text-[13px] text-ink-2">MBR boleh tumpang-tindih</span>
           </div>
           <SpatialPlane points={points} matched={matched} box={box} label="Peta spasial GiST">

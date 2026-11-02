@@ -700,8 +700,8 @@ export function searchMulticolumnNonLeading(
 
   steps.push({
     stepIndex: 1,
-    title: `Peringatan: Leading Column (customer_id) Tidak Disertakan!`,
-    explanation: `Query hanya memfilter kolom kedua (WHERE staff_id = ${targetSecondaryKey}). Karena B-Tree diurutkan berdasarkan customer_id terlebih dahulu, nilai staff_id = ${targetSecondaryKey} tersebar di berbagai cabang! Root Node tidak dapat memangkas cabang.`,
+    title: `Leading Column (customer_id) Tidak Disertakan`,
+    explanation: `Query hanya memfilter kolom kedua (WHERE staff_id = ${targetSecondaryKey}). Karena B-Tree diurutkan berdasarkan customer_id terlebih dahulu, nilai staff_id = ${targetSecondaryKey} tersebar di berbagai cabang sehingga index perlu memeriksa bagian yang lebih luas (pada PostgreSQL riil, optimizer dapat mempertimbangkan skip scan atau beralih ke Seq Scan).`,
     activeNodeId: root.id,
     visitedNodeIds: [root.id],
     matchedNodeIds: [],

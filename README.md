@@ -12,7 +12,7 @@
    * **Hash Index**: Diagram visual 8-bucket directory, hashing `hashtext()`, dan resolusi tabrakan (*collision overflow chaining*).
    * **GIN (Generalized Inverted Index)**: Arsitektur Lexicon / Inverted terms, posting list pointers, dan simulasi Bitmap Index Scan (`@>` AND vs `&&` OR).
    * **GiST (Generalized Search Tree)**: Peta spasial 2D R-Tree MBR (*Minimum Bounding Box*) dengan pemangkasan kotak non-overlap.
-   * **BRIN (Block Range Index)**: Pemetaan ringkasan `[Min..Max]` per blok fisik 8KB dan visualisasi *Block Elimination Barrier* (**SKIP 0 DISK I/O**).
+   * **BRIN (Block Range Index)**: Pemetaan ringkasan `[Min..Max]` per blok fisik 8KB dan visualisasi *Block Elimination Barrier* (blok dieliminasi dari pemindaian heap scan).
    * **SP-GiST (Space-Partitioned GiST)**: Partisi ruang 2D kuadran QuadTree (NW, NE, SW, SE) yang saling lepas (*disjoint*).
    * **Bloom Filter**: Hashing multi-kolom fleksibel ke 16-bit signature mask, demonstrasi *Definite Exclusion* dan *False Positive*.
 

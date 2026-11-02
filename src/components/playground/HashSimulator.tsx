@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { AlertTriangle, ChevronRight, Info, Plus, RotateCcw, Search, X } from 'lucide-react';
 import {
   buildHashBuckets,
-  computePostgresStyleHash,
+  computeEducationalHash,
   HashTraceStep,
   PRESET_HASH_ITEMS,
   searchHashIndex,
@@ -23,7 +23,7 @@ export const HashSimulator: React.FC = () => {
 
   const buckets = buildHashBuckets(items, 8);
   const current = steps[stepIdx] ?? null;
-  const preview = computePostgresStyleHash(searchKey || 'NC-17', 8);
+  const preview = computeEducationalHash(searchKey || 'NC-17', 8);
 
   const showTrace = (s: HashTraceStep[]) => {
     setSteps(s);
@@ -127,7 +127,7 @@ export const HashSimulator: React.FC = () => {
       <Card className="grid gap-px overflow-hidden bg-line-soft p-0 sm:grid-cols-3">
         {[
           { label: 'Input key', value: `"${searchKey || 'NC-17'}"`, cls: 'text-ink' },
-          { label: 'hashtext() 32-bit', value: preview.hashHex, cls: 'text-indigo' },
+          { label: 'Hash Edukatif (32-bit FNV-1a)', value: preview.hashHex, cls: 'text-indigo' },
           { label: 'hash mod 8', value: `Bucket ${preview.bucketIndex}`, cls: 'text-accent' },
         ].map((s) => (
           <div key={s.label} className="bg-surface px-6 py-5">
@@ -242,11 +242,14 @@ export const HashSimulator: React.FC = () => {
         idleText="Klik nilai di bucket mana pun untuk langsung mencarinya."
       />
 
-      <Note tone="neutral" icon={Info} title="Prinsip Hash Indexing &amp; Resolusi Collision di PostgreSQL">
+      <Note tone="neutral" icon={Info} title="Prinsip Hash Indexing &amp; Resolusi Collision (Model Edukatif)">
         <p>
-          Hash Index PostgreSQL memetakan nilai kolom ke dalam integer 32-bit deterministik menggunakan fungsi hash internal (<code className="font-mono text-[11.5px]">hashtext()</code>). Nomor bucket ditentukan melalui operasi modulo.
+          Simulator ini menggunakan fungsi hash edukatif 32-bit (FNV-1a) untuk mendemonstrasikan prinsip determinisme, pemetaan bucket via modulo, dan penanganan tabrakan (*collision*). Pada PostgreSQL sungguhan, fungsi hash yang digunakan adalah fungsi internal seperti <code className="font-mono text-[11.5px]">hashtext()</code>.
         </p>
         <div className="mt-2 space-y-1 border-t border-line-soft/60 pt-2 text-[12.5px] text-ink-2">
+          <p>
+            • <strong>Kompleksitas Pencarian:</strong> Rata-rata pencarian berlangsung efisien dalam \(O(1)\). Namun waktu ini adalah estimasi rata-rata ideal; bila terjadi banyak collision, PostgreSQL harus menelusuri rantai overflow page yang dapat menambah waktu pembacaan.
+          </p>
           <p>
             • <strong>Hanya Mendukung Equality (=):</strong> Karena fungsi hash mengacak distribusi nilai tanpa mempertahankan urutan data, Hash index tidak dapat memproses query rentang (<code className="font-mono text-[11.5px]">&lt;, &gt;, BETWEEN</code>) maupun <code className="font-mono text-[11.5px]">ORDER BY</code>.
           </p>

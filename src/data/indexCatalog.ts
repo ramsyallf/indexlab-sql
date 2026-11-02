@@ -8,7 +8,7 @@ export const INDEX_METHODS: Record<IndexTypeId, IndexMethodSpec> = {
     badge: 'Equality · Range · Sort',
     tagline: 'Balanced Search Tree (nbtree) untuk pencarian ekuivalensi, rentang nilai, dan pengurutan.',
     summary:
-      'PostgreSQL uses B-tree as its default index method. Its internal implementation is based on the Lehman–Yao high-concurrency B-tree approach, commonly described as a B-link tree. Leaf nodes dan internal nodes terhubung secara horizontal melalui right-link pointer (sibling link) untuk memastikan operasi baca (concurrent readers) tetap konsisten tanpa mengunci (lock) node induk saat terjadi split halaman.',
+      'PostgreSQL uses B-tree as its default index method. Its internal implementation is based on the Lehman–Yao high-concurrency B-tree approach, commonly described as a B-link tree. Leaf nodes dan internal nodes terhubung secara horizontal melalui right-link pointer (sibling link) untuk memastikan operasi baca (concurrent readers) tetap konsisten tanpa mengunci (lock) node induk saat terjadi split halaman. Visualisasi pada simulator ini adalah model konseptual edukatif untuk memahami algoritma traversal dan split, bukan representasi tata letak biner internal C struct PostgreSQL.',
     dataStructureName: 'B-link Tree (Lehman & Yao High-Concurrency B-tree)',
     howItWorks:
       'Internal node menyimpan separator key beserta "high key" dan right-link (sibling pointer) horizontal ke halaman tetangga kanan. Seluruh pasangan (key, ctid) tersimpan secara terurut di Leaf Nodes yang juga saling terhubung secara horizontal. Catatan teknis: ctid (ItemPointer) adalah heap tuple identifier (nomor blok, nomor offset), bukan alamat disk permanen; nilainya berubah saat baris di-UPDATE atau di-VACUUM (MVCC).',
@@ -23,7 +23,7 @@ export const INDEX_METHODS: Record<IndexTypeId, IndexMethodSpec> = {
     ],
     notSuitableFor: [
       "Catatan LIKE 'prefix%': Index support for prefix matching depends on database collation and operator class. In some configurations, a pattern operator class such as text_pattern_ops is required (misal: CREATE INDEX ON film (title text_pattern_ops)).",
-      "Substring searches such as LIKE '%abc%' generally require a different indexing strategy, such as GIN with pg_trgm (trigram extension).",
+      "Substring searches such as LIKE '%abc%' generally require a different indexing strategy, such as GIN dengan pg_trgm (trigram extension).",
       'Data array/JSONB dengan banyak elemen per baris (lebih cocok GIN)',
       'Data geometri/spasial 2D atau overlap poligon (lebih cocok GiST/SP-GiST)',
     ],
@@ -64,12 +64,12 @@ export const INDEX_METHODS: Record<IndexTypeId, IndexMethodSpec> = {
     isBonus: false,
     tagline: 'B-Tree pada lebih dari satu kolom dengan urutan prioritas leksikografis (Leading Column Rule).',
     summary:
-      'Mengindeks kombinasi beberapa kolom sekaligus, misalnya (customer_id, staff_id). Entri diurutkan berdasarkan kolom pertama (leading column) terlebih dahulu; kolom kedua hanya menjadi penentu urutan jika kolom pertama bernilai sama. Berbasis Lehman–Yao B-link tree yang diperluas untuk composite key.',
+      'Mengindeks kombinasi beberapa kolom sekaligus, misalnya (customer_id, staff_id). Entri diurutkan berdasarkan kolom pertama (leading column) terlebih dahulu; kolom kedua hanya menjadi penentu urutan jika kolom pertama bernilai sama. Index multicolumn B-Tree umumnya paling efisien ketika query memberikan kondisi pada kolom paling kiri (leading column).',
     dataStructureName: 'Composite Key B-link Tree (Tuple-Ordered)',
     howItWorks:
       'Setiap key di dalam node berupa pasangan komposit (k1, k2) beserta pointer ctid. Perbandingan dilakukan secara leksikografis: bandingkan k1 dulu; apabila k1 sama, baru bandingkan k2. Sibling link horizontal menghubungkan leaf page secara berurutan.',
     searchMechanism:
-      'Sangat efisien bila klausa WHERE menyertakan kolom pertama (leading column). Jika query hanya memfilter kolom kedua tanpa kolom pertama, pohon tidak bisa memangkas cabang dari Root sehingga harus memindai seluruh leaf page atau optimizer memilih Seq Scan.',
+      'Index multicolumn B-Tree umumnya paling efisien ketika query memberikan kondisi pada kolom paling kiri (leading column). Jika hanya kolom berikutnya yang digunakan, PostgreSQL mungkin perlu memeriksa bagian index yang lebih luas. Pada kondisi tertentu (misal nilai kolom pertama memiliki sedikit nilai distink), optimizer dapat menggunakan teknik skip scan.',
     supportedOperators: ['= (pada leading col)', 'AND kombinasi kolom', 'Range pada kolom terakhir yang difilter'],
     suitableQueries: [
       'WHERE customer_id = 12 AND staff_id = 2 (Full Composite Match)',
@@ -77,7 +77,7 @@ export const INDEX_METHODS: Record<IndexTypeId, IndexMethodSpec> = {
       'WHERE customer_id = 12 AND staff_id > 1 (Equality di col 1 + Range di col 2)',
     ],
     notSuitableFor: [
-      'Query yang hanya memfilter kolom kedua/ketiga saja (WHERE staff_id = 2)',
+      'Query yang hanya memfilter kolom kedua/ketiga saja tanpa leading column (efisiensi berkurang signifikan kecuali pada skenario optimasi skip scan)',
       'Kombinasi filter dengan banyak kolom opsional yang sering berubah-ubah (pertimbangkan Bloom atau index terpisah)',
     ],
     advantages: [
@@ -114,12 +114,12 @@ export const INDEX_METHODS: Record<IndexTypeId, IndexMethodSpec> = {
     badge: 'Equality Only (=)',
     tagline: 'Pencarian ekuivalensi cepat berbasis fungsi hash 32-bit dan bucket.',
     summary:
-      'Mengonversi nilai kolom menjadi kode hash 32-bit menggunakan fungsi hash deterministik, lalu memetakannya ke dalam bucket array. Hanya menyimpan nilai hash 4-byte dan pointer heap tuple (ctid), namun HANYA mendukung operator sama dengan (=). Dilengkapi mekanisme recheck nilai asli untuk mengatasi potensi collision.',
+      'Mengonversi nilai kolom menjadi kode hash 32-bit lalu memetakannya ke dalam bucket array (simulator menggunakan fungsi hash edukatif 32-bit FNV-1a untuk mendemonstrasikan bucket modulo dan collision). Hanya menyimpan kode hash 4-byte dan pointer heap tuple (ctid), dan HANYA mendukung operator sama dengan (=). Dilengkapi mekanisme recheck nilai asli tuple untuk mengatasi potensi hash collision.',
     dataStructureName: 'Hash Bucket Array + Overflow Pages',
     howItWorks:
       'Nilai input di-hash menjadi 32-bit integer dan dipetakan ke nomor Bucket (h(k) mod N). Jika dua nilai berbeda jatuh pada bucket yang sama (Collision), entri disimpan pada overflow page berantai. Setiap entri memuat nilai hash dan heap tuple identifier (ctid).',
     searchMechanism:
-      'Menghitung hash dari nilai yang dicari O(1), langsung melompat ke Bucket tujuan, membandingkan hash code 32-bit, lalu melakukan verifikasi nilai asli pada tabel heap (tuple recheck) untuk memastikan kecocokan sebenarnya dan mengatasi hash collision.',
+      'Menghitung hash dari nilai yang dicari dengan waktu rata-rata O(1), langsung melompat ke Bucket tujuan, membandingkan hash code 32-bit, lalu melakukan verifikasi nilai asli pada tabel heap (tuple recheck) untuk memastikan kecocokan sebenarnya. Jika terdapat collision dan rantai overflow page yang panjang, proses pencarian dapat memerlukan traversal tambahan.',
     supportedOperators: ['='],
     suitableQueries: [
       'Pencarian exact match pada string panjang/UUID/URL (WHERE rating = \'NC-17\')',
@@ -165,18 +165,18 @@ export const INDEX_METHODS: Record<IndexTypeId, IndexMethodSpec> = {
     badge: 'Array · JSONB · Full-Text',
     tagline: 'Inverted Index untuk nilai majemuk (multi-value): Array, JSONB, dan Full-Text Search.',
     summary:
-      'Dirancang untuk kolom yang berisi banyak elemen di dalam satu baris (seperti kata-kata dalam dokumen, elemen Array, atau key-value JSONB). Mengorganisasi data sebagai Inverted Index di mana setiap elemen komponen (token unik) dipetakan ke daftar baris (Posting List / Posting Tree).',
+      'Dirancang untuk kolom yang berisi banyak elemen di dalam satu baris (seperti kata-kata dalam dokumen, elemen Array, atau key-value JSONB). Mengorganisasi data sebagai Inverted Index di mana setiap elemen komponen (token unik) dipetakan ke daftar baris (Posting List / Posting Tree). Operator yang didukung bergantung pada tipe data dan operator class (misal array_ops untuk array, jsonb_ops/jsonb_path_ops untuk JSONB, tsvector_ops untuk Full-Text, atau gin_trgm_ops untuk trigram).',
     dataStructureName: 'Inverted Index: B-Tree of Entry Keys → Posting List (ctid array / Posting Tree)',
     howItWorks:
       'Setiap baris dipecah (tokenized) menjadi elemen-elemen penyusunnya. Setiap elemen unik disimpan satu kali di dalam entry tree (B-Tree internal) dan menunjuk ke daftar terurut heap tuple identifier (Posting List / Posting Tree jika daftar sangat panjang).',
     searchMechanism:
-      'Mencari komponen token yang diminta di dalam kamus entry tree, mengambil Posting List masing-masing token, lalu melakukan operasi himpunan secara efisien melalui Bitmap Index Scan (irisan AND untuk @> atau gabungan OR untuk &&).',
-    supportedOperators: ['@>', '<@', '&&', '?', '?|', '?&', '@@ (tsquery)'],
+      'Mencari komponen token yang diminta di dalam kamus entry tree, mengambil Posting List masing-masing token, lalu melakukan operasi himpunan secara efisien melalui Bitmap Index Scan (irisan AND untuk @> atau gabungan OR untuk && pada array_ops).',
+    supportedOperators: ['@> (contains)', '<@ (contained by)', '&& (overlap)', '? (exists key)', '?|', '?&', '@@ (tsquery)'],
     suitableQueries: [
-      'Pencarian elemen di dalam kolom Array (WHERE special_features @> ARRAY[\'Trailers\'])',
-      'Pencarian struktur JSONB (WHERE metadata @> \'{"language": "Japanese"}\')',
-      'Full-Text Search dokumen (WHERE fulltext @@ to_tsquery(\'dinosaur & drama\'))',
-      'Pencarian substring trigram dengan ekstensi pg_trgm (WHERE title LIKE \'%abc%\')',
+      'Pencarian elemen di dalam kolom Array dengan operator class array_ops (WHERE special_features @> ARRAY[\'Trailers\'])',
+      'Pencarian struktur JSONB dengan jsonb_ops (WHERE metadata @> \'{"language": "Japanese"}\')',
+      'Full-Text Search dokumen dengan tsvector_ops (WHERE fulltext @@ to_tsquery(\'dinosaur & drama\'))',
+      'Pencarian substring trigram dengan ekstensi pg_trgm gin_trgm_ops (WHERE title LIKE \'%abc%\')',
     ],
     notSuitableFor: [
       'Kolom skalar sederhana (angka tunggal/tanggal) yang cukup ditangani B-Tree',
@@ -214,12 +214,12 @@ export const INDEX_METHODS: Record<IndexTypeId, IndexMethodSpec> = {
     name: 'GiST (Generalized Search Tree)',
     shortName: 'GiST',
     badge: 'Geometric · Spatial · Range',
-    tagline: 'Struktur pohon berbasis Bounding Region (R-Tree) untuk data spasial, geometri, dan rentang.',
+    tagline: 'Kerangka pohon extensible berbasis Bounding Region untuk data spasial, geometri, dan rentang.',
     summary:
-      'Framework pohon berimbang extensible yang membagi data ke dalam wilayah pembatas (Minimum Bounding Rectangle / MBR) yang boleh saling tumpang-tindih (overlapping). Operator yang didukung sangat bergantung pada operator class yang digunakan (misal: gist_geometry_ops_2d untuk geometri, range_ops untuk rentang tanggal).',
-    dataStructureName: 'Generalized Search Tree (R-Tree / Bounding Region Hierarchy)',
+      'GiST (Generalized Search Tree) adalah kerangka pohon pencarian extensible di PostgreSQL untuk berbagai strategi indexing. Simulator ini menampilkan model visual konseptual R-Tree spasial di mana data dikelompokkan ke dalam Minimum Bounding Rectangle (MBR) yang boleh saling tumpang-tindih (overlapping). Operator yang didukung sangat bergantung pada operator class yang digunakan (misal: gist_geometry_ops_2d untuk geometri, range_ops untuk rentang tanggal).',
+    dataStructureName: 'Kerangka Extensible GiST (Model Konseptual R-Tree / MBR)',
     howItWorks:
-      'Setiap node internal menyimpan predikat pembatas (Bounding Box / MBR) yang membungkus seluruh objek geometri/rentang pada cabangnya. Operator class menentukan fungsi konsistensi, penyatuan (union), dan penalti pemisahan (picksplit). Kotak pembatas antar cabang pada GiST diperbolehkan saling tumpang-tindih.',
+      'Setiap node internal menyimpan predikat pembatas (Bounding Box / MBR pada model R-Tree) yang membungkus seluruh objek geometri/rentang pada cabangnya. Operator class menentukan fungsi konsistensi, penyatuan (union), dan penalti pemisahan (picksplit). Kotak pembatas antar cabang pada GiST diperbolehkan saling tumpang-tindih.',
     searchMechanism:
       'Memeriksa apakah wilayah query berpotongan (intersects/overlaps) dengan Bounding Box suatu node. Cabang yang tidak berpotongan langsung dieliminasi (pruning). Jika ada beberapa MBR tumpang-tindih yang sama-sama berpotongan, pencarian menelusuri seluruh cabang terkait hingga leaf.',
     supportedOperators: ['&& (overlap)', '@> (contains)', '<@ (contained by)', '<-> (Nearest Neighbor KNN)', '<<', '>>'],
@@ -270,7 +270,7 @@ export const INDEX_METHODS: Record<IndexTypeId, IndexMethodSpec> = {
     howItWorks:
       'Untuk setiap rentang halaman fisik di disk (misalnya default 128 halaman = 1MB), BRIN mencatat nilai terkecil (min) dan terbesar (max). Efektivitas eliminasi blok sangat ditentukan oleh korelasi urutan fisik data di disk (Physical Row Order Correlation).',
     searchMechanism:
-      'Membandingkan kondisi query WHERE dengan rentang [Min, Max] tiap blok range. Rentang blok yang tidak mungkin memuat nilai query langsung dieliminasi (Block Elimination - 0 disk I/O). Pada rentang blok yang lolos seleksi, PostgreSQL melakukan Bitmap Heap Scan dengan recheck baris per baris (Lossy Recheck).',
+      'Membandingkan kondisi query WHERE dengan rentang [Min, Max] tiap blok range. Rentang blok yang tidak mungkin memuat nilai query langsung dieliminasi dari pemindaian heap scan (tidak perlu membaca tuple blok tersebut). Pada rentang blok yang lolos seleksi, PostgreSQL melakukan Bitmap Heap Scan dengan recheck baris per baris (Lossy Recheck).',
     supportedOperators: ['=', '<', '<=', '>', '>=', 'BETWEEN'],
     suitableQueries: [
       'Tabel log/transaksi berukuran puluhan juta baris di mana kolom waktu (rental_date) selalu bertambah seiring urutan insert fisik',
@@ -363,10 +363,10 @@ export const INDEX_METHODS: Record<IndexTypeId, IndexMethodSpec> = {
     requiresExtension: 'CREATE EXTENSION IF NOT EXISTS bloom;',
     tagline: 'Filter probabilistik berbasis Bit Array untuk query multi-kolom dengan kombinasi filter bebas.',
     summary:
-      'Menggunakan struktur Bloom Filter (signature bit array per baris tuple) untuk mengindeks banyak kolom sekaligus. Mengatasi kelemahan Multicolumn B-Tree karena aplikasi dapat memfilter kombinasi subset kolom mana saja tanpa terikat urutan kolom pertama. Bersifat probabilistik (false positive disaring melalui heap recheck) dan hanya mendukung operator ekuivalensi (=).',
-    dataStructureName: 'Per-Tuple Bit Signature Array + K Hash Functions',
+      'Menggunakan struktur Bloom Filter (signature bit array per baris tuple) untuk mengindeks banyak kolom sekaligus. Merupakan ekstensi tambahan (contrib/bloom), bukan built-in access method inti. Simulator memvisualisasikan signature 16-bit sebagai penyederhanaan edukatif (pada PostgreSQL riil, parameter length mendukung hingga 4096-bit, default 80-bit, dengan col1..col32 bit per kolom). Bersifat probabilistik (false positive disaring melalui heap recheck) dan hanya mendukung operator ekuivalensi (=).',
+    dataStructureName: 'Per-Tuple Bit Signature Array + K Hash Functions (Ekstensi bloom)',
     howItWorks:
-      'Setiap nilai kolom pada sebuah baris di-hash oleh beberapa fungsi hash independen (h1, h2, ...) untuk menyalakan bit (menjadi 1) pada posisi tertentu di dalam signature bit sepanjang M bit (default 80-bit per tuple).',
+      'Setiap nilai kolom pada sebuah baris di-hash oleh beberapa fungsi hash independen (h1, h2, ...) untuk menyalakan bit (menjadi 1) pada posisi tertentu di dalam signature bit sepanjang M bit (pada simulator disederhanakan menjadi 16-bit; di PostgreSQL dikonfigurasi via parameter WITH length).',
     searchMechanism:
       'Menghitung bitmask dari kolom-kolom yang difilter pada klausa WHERE. Jika ada SATU saja bit yang bernilai 0 pada signature baris, baris tersebut PASTI TIDAK COCOK (Definite No). Jika seluruh bit bernilai 1, baris tersebut MUNGKIN COCOK (Probable Match) dan PostgreSQL akan menjalankan Bitmap Heap Scan Recheck untuk menyaring False Positive.',
     supportedOperators: ['= (pada kombinasi subset kolom mana pun)'],
