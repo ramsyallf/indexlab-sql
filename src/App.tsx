@@ -20,7 +20,7 @@ function AnimatedAppRoutes() {
       </a>
       <Navbar />
 
-      <main id="main" className="mx-auto w-full max-w-[1240px] flex-1 px-5 pb-20 pt-8 sm:px-8 sm:pt-10">
+      <main id="main" className="mx-auto w-full max-w-[1240px] flex-1 px-3.5 sm:px-8 pb-16 sm:pb-20 pt-5 sm:pt-10">
         <AnimatePresence mode="wait">
           <motion.div
             key={rootKey}

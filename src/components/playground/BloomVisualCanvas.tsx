@@ -1,4 +1,5 @@
 import React from 'react';
+import { ArrowRightLeft } from 'lucide-react';
 import { MONO, SANS } from '../../ui/theme';
 
 interface BloomVisualCanvasProps {
@@ -30,7 +31,13 @@ export const BloomVisualCanvas: React.FC<BloomVisualCanvasProps> = ({
   ];
 
   return (
-    <div className="overflow-x-auto">
+    <div>
+      <div className="mb-2 flex items-center lg:hidden">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-[11.5px] font-semibold text-blue-600 border border-blue-200 shadow-xs">
+          <ArrowRightLeft className="h-3 w-3" /> Geser horizontal untuk melihat bit array signature
+        </span>
+      </div>
+      <div className="overflow-x-auto touch-scroll pb-2">
       <svg
         width={canvasWidth}
         height={canvasHeight}
@@ -145,6 +152,7 @@ export const BloomVisualCanvas: React.FC<BloomVisualCanvasProps> = ({
           );
         })}
       </svg>
+      </div>
     </div>
   );
 };

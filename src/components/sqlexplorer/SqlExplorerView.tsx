@@ -24,7 +24,7 @@ export const SqlExplorerView: React.FC = () => {
       />
 
       {/* Filter Chips */}
-      <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+      <div className="-mx-3.5 sm:-mx-1 flex gap-2 overflow-x-auto px-3.5 sm:px-1 pb-2 touch-scroll no-scrollbar">
         <Chip active={filterIndex === 'all'} onClick={() => setFilterIndex('all')}>
           Semua ({SQL_EXPLORER_EXAMPLES.length})
         </Chip>

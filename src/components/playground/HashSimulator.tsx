@@ -136,9 +136,9 @@ export const HashSimulator: React.FC = () => {
           { label: 'Hash Edukatif (32-bit FNV-1a)', value: preview.hashHex, cls: 'text-indigo' },
           { label: 'hash mod 8', value: `Bucket ${preview.bucketIndex}`, cls: 'text-accent' },
         ].map((s) => (
-          <div key={s.label} className="bg-surface px-6 py-5">
-            <div className="text-[13px] text-ink-2">{s.label}</div>
-            <div className={cx('mt-1 truncate font-mono text-[20px] font-semibold tracking-tight', s.cls)}>{s.value}</div>
+          <div key={s.label} className="bg-surface px-4 py-3 sm:px-6 sm:py-5">
+            <div className="text-[12px] sm:text-[13px] text-ink-2">{s.label}</div>
+            <div className={cx('mt-1 truncate font-mono text-[16px] sm:text-[20px] font-semibold tracking-tight', s.cls)}>{s.value}</div>
           </div>
         ))}
       </Card>

@@ -66,14 +66,14 @@ export function PageHeader({
   accessory?: React.ReactNode;
 }) {
   return (
-    <header className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+    <header className="mb-6 sm:mb-8 flex flex-col gap-3 sm:gap-4 md:flex-row md:items-end md:justify-between">
       <div>
-        <h1 className="font-display text-[34px] font-bold leading-[1.1] tracking-[-0.025em] text-ink md:text-[42px]">
+        <h1 className="font-display text-[26px] sm:text-[34px] font-bold leading-[1.15] tracking-[-0.025em] text-ink md:text-[40px]">
           {title}
         </h1>
-        {subtitle && <p className="mt-2.5 max-w-[64ch] text-[16px] leading-relaxed text-ink-2">{subtitle}</p>}
+        {subtitle && <p className="mt-2 max-w-[64ch] text-[14.5px] sm:text-[16px] leading-relaxed text-ink-2">{subtitle}</p>}
       </div>
-      {accessory}
+      {accessory && <div className="self-start md:self-auto">{accessory}</div>}
     </header>
   );
 }
@@ -151,7 +151,7 @@ export function Segmented<T extends string | number>({
     <div
       role="radiogroup"
       aria-label={ariaLabel}
-      className={cx('inline-flex max-w-full overflow-x-auto rounded-full bg-fill p-1 border border-line-soft/60', className)}
+      className={cx('inline-flex max-w-full overflow-x-auto rounded-full bg-fill p-1 border border-line-soft/60 touch-scroll no-scrollbar', className)}
     >
       {options.map((o) => {
         const active = o.value === value;
@@ -165,7 +165,7 @@ export function Segmented<T extends string | number>({
             onClick={() => onChange(o.value)}
             className={cx(
               'relative inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full font-medium transition-colors',
-              size === 'sm' ? 'h-8 px-3 text-[13px]' : 'h-10 px-4 text-[14px]',
+              size === 'sm' ? 'h-7 sm:h-8 px-2.5 sm:px-3 text-[12px] sm:text-[13px]' : 'h-8 sm:h-10 px-3 sm:px-4 text-[13px] sm:text-[14px]',
               active ? 'text-accent font-semibold' : 'text-ink-2 hover:text-ink'
             )}
           >
@@ -177,7 +177,7 @@ export function Segmented<T extends string | number>({
               />
             )}
             <span className="relative inline-flex items-center gap-1.5">
-              {Icon && <Icon className={cx('h-4 w-4', active ? 'text-accent' : 'text-ink-2')} aria-hidden />}
+              {Icon && <Icon className={cx('h-3.5 w-3.5 sm:h-4 sm:w-4', active ? 'text-accent' : 'text-ink-2')} aria-hidden />}
               {o.label}
             </span>
           </button>
@@ -342,12 +342,12 @@ export function Stat({
   small?: boolean;
 }) {
   return (
-    <div className={cx('rounded-2xl p-4 border transition-colors', STAT_BOX[tone])}>
+    <div className={cx('rounded-2xl p-3 sm:p-4 border transition-colors', STAT_BOX[tone])}>
       <div className="text-[12px] text-ink-2 font-medium">{label}</div>
       <div
         className={cx(
           'mt-1 font-display font-semibold tabular-nums tracking-tight',
-          small ? 'text-[14px] leading-snug' : 'text-[24px]',
+          small ? 'text-[13px] sm:text-[14px] leading-snug' : 'text-[18px] sm:text-[22px] md:text-[24px]',
           STAT_TONES[tone]
         )}
       >
@@ -463,12 +463,12 @@ export function StepPlayer({
   const has = total > 0;
   return (
     <Card className={cx('p-5 sm:p-6', className)}>
-      <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-3 sm:gap-4">
         <div className="min-w-0 flex-1">
           <p className="text-[13px] font-semibold text-accent">
             {has ? `Langkah ${index + 1} dari ${total}` : 'Belum ada simulasi'}
           </p>
-          <h3 className="mt-1 text-[19px] font-semibold tracking-tight text-ink">{has ? title : idleTitle}</h3>
+          <h3 className="mt-1 text-[17px] sm:text-[19px] font-semibold tracking-tight text-ink">{has ? title : idleTitle}</h3>
         </div>
         {has && (
           <div className="flex items-center gap-2">

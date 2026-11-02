@@ -220,8 +220,13 @@ export const IndexComparisonView: React.FC = () => {
         <h3 className="text-[17px] font-semibold tracking-tight text-ink">
           Matriks Kompatibilitas Pola Query &amp; Operator
         </h3>
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full border-collapse text-left text-[14px]">
+        <div className="mt-2 flex items-center sm:hidden">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-[11.5px] font-semibold text-blue-600 border border-blue-200 shadow-xs">
+            <ArrowLeftRight className="h-3 w-3" /> Geser tabel untuk kolom lengkap
+          </span>
+        </div>
+        <div className="mt-4 overflow-x-auto touch-scroll pb-1">
+          <table className="w-full min-w-[480px] sm:min-w-0 border-collapse text-left text-[13.5px] sm:text-[14px]">
             <thead>
               <tr className="border-b border-line-soft text-ink-2 text-[13px]">
                 <th className="pb-3 pr-4 font-medium">Pola Query / Operator</th>

@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { ArrowRightLeft } from 'lucide-react';
 import { BTreeNode, BTreeTraceStep, formatEntryLabel } from '../../engines/btreeEngine';
 import { LegendDot } from '../ui/primitives';
 import { MONO, P, SANS } from '../../ui/theme';
@@ -136,7 +137,13 @@ export const BTreeCanvas: React.FC<BTreeCanvasProps> = ({ root, currentStep, isM
         <span className="ml-auto font-mono text-[12px] text-ink-3">nbtree · Lehman–Yao B-link tree</span>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="mb-2 flex items-center lg:hidden">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-[11.5px] font-semibold text-blue-600 border border-blue-200 shadow-xs">
+          <ArrowRightLeft className="h-3 w-3" /> Geser horizontal untuk melihat seluruh pohon
+        </span>
+      </div>
+
+      <div className="overflow-x-auto touch-scroll pb-2">
         <svg
           width={layout.canvasWidth}
           height={layout.canvasHeight}

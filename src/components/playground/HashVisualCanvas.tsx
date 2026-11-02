@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { ArrowRightLeft } from 'lucide-react';
 import { HashBucket, HashTraceStep } from '../../engines/otherIndexEngines';
 import { MONO, P, SANS } from '../../ui/theme';
 
@@ -26,7 +27,13 @@ export const HashVisualCanvas: React.FC<HashVisualCanvasProps> = ({
   const canvasHeight = startY + buckets.length * rowHeight + 20;
 
   return (
-    <div className="overflow-x-auto">
+    <div>
+      <div className="mb-2 flex items-center lg:hidden">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-[11.5px] font-semibold text-blue-600 border border-blue-200 shadow-xs">
+          <ArrowRightLeft className="h-3 w-3" /> Geser horizontal untuk melihat bucket &amp; overflow
+        </span>
+      </div>
+      <div className="overflow-x-auto touch-scroll pb-2">
       <svg
         width={canvasWidth}
         height={canvasHeight}
@@ -187,6 +194,7 @@ export const HashVisualCanvas: React.FC<HashVisualCanvasProps> = ({
           );
         })}
       </svg>
+      </div>
     </div>
   );
 };

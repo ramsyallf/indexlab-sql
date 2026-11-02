@@ -1,4 +1,5 @@
 import React from 'react';
+import { ArrowRightLeft } from 'lucide-react';
 import { BrinBlock } from '../../engines/otherIndexEngines';
 import { MONO, SANS } from '../../ui/theme';
 
@@ -29,7 +30,13 @@ export const BrinVisualCanvas: React.FC<BrinVisualCanvasProps> = ({
   const canvasHeight = 270;
 
   return (
-    <div className="overflow-x-auto">
+    <div>
+      <div className="mb-2 flex items-center lg:hidden">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-[11.5px] font-semibold text-blue-600 border border-blue-200 shadow-xs">
+          <ArrowRightLeft className="h-3 w-3" /> Geser horizontal untuk melihat rentang blok disk
+        </span>
+      </div>
+      <div className="overflow-x-auto touch-scroll pb-2">
       <svg
         width={canvasWidth}
         height={canvasHeight}
@@ -172,6 +179,7 @@ export const BrinVisualCanvas: React.FC<BrinVisualCanvasProps> = ({
           );
         })}
       </svg>
+      </div>
     </div>
   );
 };

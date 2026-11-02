@@ -68,11 +68,11 @@ export const GistSimulator: React.FC = () => {
             })}
           </SpatialPlane>
 
-          <form onSubmit={addPoint} className="mt-5 flex flex-wrap items-end gap-3 border-t border-line-soft pt-5">
-            <Field label="X" className="w-24">
+          <form onSubmit={addPoint} className="mt-5 flex flex-wrap items-end gap-2.5 sm:gap-3 border-t border-line-soft pt-5">
+            <Field label="X" className="w-20 sm:w-24">
               <input type="number" value={newX} onChange={(e) => setNewX(e.target.value)} className={inputCls} />
             </Field>
-            <Field label="Y" className="w-24">
+            <Field label="Y" className="w-20 sm:w-24">
               <input type="number" value={newY} onChange={(e) => setNewY(e.target.value)} className={inputCls} />
             </Field>
             <Button type="submit" icon={Plus}>

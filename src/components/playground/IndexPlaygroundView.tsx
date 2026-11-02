@@ -64,7 +64,7 @@ export const IndexPlaygroundView: React.FC<Props> = ({ selectedIndex: propSelect
         subtitle="Pilih metode index, jalankan operasi, lalu ikuti langkah demi langkah bagaimana database mengorganisasi dan menemukan data secara visual."
       />
 
-      <nav aria-label="Jenis index" className="-mx-1 mb-10 flex gap-2 overflow-x-auto px-1 pb-2">
+      <nav aria-label="Jenis index" className="-mx-3.5 sm:-mx-1 mb-6 sm:mb-10 flex gap-2 overflow-x-auto px-3.5 sm:px-1 pb-2 touch-scroll no-scrollbar">
         {INDEX_ORDER.map((id) => {
           const m = INDEX_METHODS[id];
           const active = selectedIndex === id;
@@ -77,11 +77,11 @@ export const IndexPlaygroundView: React.FC<Props> = ({ selectedIndex: propSelect
       </nav>
 
       {/* Web3 Hero Card (Adapta-Style Gradient Mesh) */}
-      <section className="relative mb-10 overflow-hidden rounded-[26px] bg-gradient-to-br from-[#1E40AF] via-[#2563EB] to-[#0284C7] p-6 sm:p-8 text-white shadow-xl shadow-blue-500/15">
+      <section className="relative mb-8 sm:mb-10 overflow-hidden rounded-[20px] sm:rounded-[26px] bg-gradient-to-br from-[#1E40AF] via-[#2563EB] to-[#0284C7] p-5 sm:p-8 text-white shadow-xl shadow-blue-500/15">
         <div className="pointer-events-none absolute -right-20 -top-20 h-80 w-80 rounded-full bg-cyan-400/25 blur-3xl" />
         <div className="pointer-events-none absolute -left-20 -bottom-20 h-80 w-80 rounded-full bg-indigo-500/30 blur-3xl" />
 
-        <div className="relative z-10 grid gap-8 lg:grid-cols-[1fr_420px] lg:items-center">
+        <div className="relative z-10 grid gap-6 sm:gap-8 lg:grid-cols-[1fr_420px] lg:items-center">
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-[12px] font-semibold text-white backdrop-blur-md border border-white/30 shadow-xs">
@@ -90,14 +90,14 @@ export const IndexPlaygroundView: React.FC<Props> = ({ selectedIndex: propSelect
               </span>
             </div>
 
-            <h2 className="mt-4 font-display text-[30px] sm:text-[36px] font-extrabold leading-[1.1] tracking-tight text-white">
+            <h2 className="mt-3 sm:mt-4 font-display text-[26px] sm:text-[34px] lg:text-[36px] font-extrabold leading-[1.15] tracking-tight text-white">
               {spec.name}
             </h2>
-            <p className="mt-3 max-w-[62ch] text-[15.5px] leading-relaxed text-blue-50/90">
+            <p className="mt-2.5 sm:mt-3 max-w-[62ch] text-[14.5px] sm:text-[15.5px] leading-relaxed text-blue-50/90">
               {spec.summary}
             </p>
 
-            <dl className="mt-6 grid gap-4 sm:grid-cols-2">
+            <dl className="mt-5 sm:mt-6 grid gap-3 sm:gap-4 sm:grid-cols-2">
               <div className="rounded-2xl bg-white/10 p-3.5 backdrop-blur-md border border-white/15">
                 <dt className="text-[12px] font-medium text-blue-100">Struktur data</dt>
                 <dd className="mt-1 text-[14px] font-semibold text-white">{spec.dataStructureName}</dd>
@@ -150,8 +150,8 @@ export const IndexPlaygroundView: React.FC<Props> = ({ selectedIndex: propSelect
         </motion.div>
       </AnimatePresence>
 
-      <section className="mt-10 grid gap-5 md:grid-cols-2">
-        <Card className="p-6 border-t-4 border-t-emerald-500 bg-gradient-to-br from-emerald-50/20 via-white to-white">
+      <section className="mt-8 sm:mt-10 grid gap-4 sm:gap-5 md:grid-cols-2">
+        <Card className="p-5 sm:p-6 border-t-4 border-t-emerald-500 bg-gradient-to-br from-emerald-50/20 via-white to-white">
           <div className="flex items-center gap-2.5">
             <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
               <Check className="h-4 w-4 stroke-[2.5]" />
@@ -170,7 +170,7 @@ export const IndexPlaygroundView: React.FC<Props> = ({ selectedIndex: propSelect
           </ul>
         </Card>
 
-        <Card className="p-6 border-t-4 border-t-rose-500 bg-gradient-to-br from-rose-50/20 via-white to-white">
+        <Card className="p-5 sm:p-6 border-t-4 border-t-rose-500 bg-gradient-to-br from-rose-50/20 via-white to-white">
           <div className="flex items-center gap-2.5">
             <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-rose-100 text-rose-700">
               <X className="h-4 w-4 stroke-[2.5]" />

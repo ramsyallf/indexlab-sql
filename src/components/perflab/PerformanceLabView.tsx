@@ -64,21 +64,21 @@ export const PerformanceLabView: React.FC = () => {
 
   const chartData = [
     {
-      name: 'Seq Scan (Tanpa Index)',
+      name: 'Seq Scan',
       'Rows Scanned': planSeq.rowsScanned,
       'Blocks Read': planSeq.blocksRead,
       'Simulated Time (ms)': planSeq.simulatedTimeMs,
       'Index Size (KB)': planSeq.indexSizeKb,
     },
     {
-      name: `Index 1 (${INDEX_METHODS[index1].shortName})`,
+      name: INDEX_METHODS[index1].shortName,
       'Rows Scanned': planIdx1.rowsScanned,
       'Blocks Read': planIdx1.blocksRead,
       'Simulated Time (ms)': planIdx1.simulatedTimeMs,
       'Index Size (KB)': planIdx1.indexSizeKb,
     },
     {
-      name: `Index 2 (${INDEX_METHODS[index2].shortName})`,
+      name: INDEX_METHODS[index2].shortName,
       'Rows Scanned': planIdx2.rowsScanned,
       'Blocks Read': planIdx2.blocksRead,
       'Simulated Time (ms)': planIdx2.simulatedTimeMs,

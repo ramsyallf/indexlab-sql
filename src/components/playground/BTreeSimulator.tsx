@@ -163,7 +163,7 @@ export const BTreeSimulator: React.FC<BTreeSimulatorProps> = ({ mode = 'single' 
   }[op];
 
   const keyField = (value: string, set: (v: string) => void, label = col) => (
-    <Field label={label} className="w-32">
+    <Field label={label} className="w-[calc(50%-6px)] sm:w-32">
       <input type="number" inputMode="numeric" value={value} onChange={(e) => set(e.target.value)} className={inputCls} />
     </Field>
   );

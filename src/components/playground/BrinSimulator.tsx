@@ -36,7 +36,7 @@ export const BrinSimulator: React.FC = () => {
 
         <div className="mt-5 border-t border-line-soft pt-5">
           <div className="flex flex-wrap items-end gap-3">
-            <Field label="Batas Bawah" className="w-36">
+            <Field label="Batas Bawah" className="w-[calc(50%-6px)] sm:w-36">
               <input
                 type="number"
                 value={minVal}
@@ -44,7 +44,7 @@ export const BrinSimulator: React.FC = () => {
                 className={inputCls}
               />
             </Field>
-            <Field label="Batas Atas" className="w-36">
+            <Field label="Batas Atas" className="w-[calc(50%-6px)] sm:w-36">
               <input
                 type="number"
                 value={maxVal}
