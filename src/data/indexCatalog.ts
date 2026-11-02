@@ -3,7 +3,7 @@ import { IndexMethodSpec, IndexTypeId, PerfScenario, SqlExampleItem } from '../t
 export const INDEX_METHODS: Record<IndexTypeId, IndexMethodSpec> = {
   btree: {
     id: 'btree',
-    name: 'B-Tree Index (Default PostgreSQL)',
+    name: 'B-Tree Index',
     shortName: 'B-Tree',
     badge: 'Equality · Range · Sort',
     tagline: 'Balanced Search Tree (nbtree) untuk pencarian ekuivalensi, rentang nilai, dan pengurutan.',
