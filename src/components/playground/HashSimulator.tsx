@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertTriangle, ChevronRight, Plus, RotateCcw, Search, X } from 'lucide-react';
+import { AlertTriangle, ChevronRight, Info, Plus, RotateCcw, Search, X } from 'lucide-react';
 import {
   buildHashBuckets,
   computePostgresStyleHash,
@@ -241,6 +241,20 @@ export const HashSimulator: React.FC = () => {
         idleTitle="Jalankan lookup untuk melihat langkahnya"
         idleText="Klik nilai di bucket mana pun untuk langsung mencarinya."
       />
+
+      <Note tone="neutral" icon={Info} title="Prinsip Hash Indexing &amp; Resolusi Collision di PostgreSQL">
+        <p>
+          Hash Index PostgreSQL memetakan nilai kolom ke dalam integer 32-bit deterministik menggunakan fungsi hash internal (<code className="font-mono text-[11.5px]">hashtext()</code>). Nomor bucket ditentukan melalui operasi modulo.
+        </p>
+        <div className="mt-2 space-y-1 border-t border-line-soft/60 pt-2 text-[12.5px] text-ink-2">
+          <p>
+            • <strong>Hanya Mendukung Equality (=):</strong> Karena fungsi hash mengacak distribusi nilai tanpa mempertahankan urutan data, Hash index tidak dapat memproses query rentang (<code className="font-mono text-[11.5px]">&lt;, &gt;, BETWEEN</code>) maupun <code className="font-mono text-[11.5px]">ORDER BY</code>.
+          </p>
+          <p>
+            • <strong>Collision &amp; Recheck:</strong> Ketika dua nilai berbeda menghasilkan kode hash atau nomor bucket yang sama (hash collision), entri disimpan pada overflow page. PostgreSQL selalu membaca baris tabel heap untuk memverifikasi nilai asli tuple guna memastikan akurasi data.
+          </p>
+        </div>
+      </Note>
     </div>
   );
 };

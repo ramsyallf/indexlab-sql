@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Plus, RotateCcw } from 'lucide-react';
+import { Info, Plus, RotateCcw } from 'lucide-react';
 import { buildGistRTree, PRESET_SPATIAL_POINTS, searchGistBoxOverlap, SpatialPoint } from '../../engines/otherIndexEngines';
-import { Button, Card, cx, Field, inputCls, Tag } from '../ui/primitives';
+import { Button, Card, cx, Field, inputCls, Note, Tag } from '../ui/primitives';
 import { Box, BoxSliders, SpatialPlane, toX, toY } from './spatial';
 import { P, SANS } from '../../ui/theme';
 
@@ -123,6 +123,16 @@ export const GistSimulator: React.FC = () => {
           </ol>
         </Card>
       </div>
+
+      <Note tone="neutral" icon={Info} title="Karakteristik GiST &amp; Ketergantungan Operator Class">
+        <p>
+          GiST (Generalized Search Tree) adalah framework pohon pencarian berimbang yang extensible. Perilaku pemotongan cabang dan operator yang didukung ditentukan oleh <strong>operator class</strong> yang dipilih:
+        </p>
+        <ul className="mt-1.5 list-disc pl-5 space-y-1 text-[12.5px] text-ink-2">
+          <li><strong>Geometri 2D (<code className="font-mono text-[11.5px]">gist_geometry_ops_2d</code>):</strong> Mengorganisasi data koordinat ke dalam hierarki Minimum Bounding Rectangle (MBR). Mendukung operator tumpang-tindih (<code className="font-mono text-[11.5px]">&amp;&amp;</code>), pembungkusan (<code className="font-mono text-[11.5px]">@&gt;</code>, <code className="font-mono text-[11.5px]">&lt;@</code>), dan pencarian tetangga terdekat (<code className="font-mono text-[11.5px]">&lt;-&gt;</code> KNN). Bounding box antar cabang boleh saling tumpang-tindih (overlapping).</li>
+          <li><strong>Rentang (<code className="font-mono text-[11.5px]">range_ops</code>):</strong> Mendukung deteksi overlap rentang waktu (misal <code className="font-mono text-[11.5px]">tsrange &amp;&amp; tsrange</code>) untuk sistem pemesanan jadwal tanpa tabrakan reservasi.</li>
+        </ul>
+      </Note>
     </div>
   );
 };

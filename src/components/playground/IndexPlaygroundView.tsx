@@ -130,13 +130,36 @@ export const IndexPlaygroundView: React.FC<Props> = ({ selectedIndex: propSelect
             <CodeBlock code={spec.defaultSqlExample} className="bg-slate-950/90 border border-slate-800 text-slate-100" />
             <div className="mt-3 flex items-center justify-between text-[11.5px] text-slate-300">
               <span>
-                Ukuran relatif: <strong className="text-cyan-300 font-semibold">{spec.storageProfile.relativeSize}</strong>
+                Ukuran: <strong className="text-cyan-300 font-semibold">{spec.storageProfile.relativeSize}</strong>
               </span>
-              <span className="text-slate-400">Simulasi konseptual</span>
+              <span className="text-slate-400">Estimasi konseptual edukatif</span>
             </div>
           </div>
         </div>
       </section>
+
+      {selectedIndex === 'btree' && (
+        <div className="mb-8 rounded-2xl border border-blue-200/80 bg-blue-50/70 p-4.5 text-[13.5px] leading-relaxed text-blue-950 shadow-xs">
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-600 text-[11px] font-bold text-white shadow-xs">
+              i
+            </span>
+            <div className="space-y-1.5">
+              <p>
+                <strong>Catatan Arsitektur B-Tree PostgreSQL:</strong> PostgreSQL mengimplementasikan varian <em>Lehman–Yao high-concurrency B-tree</em> (umumnya disebut sebagai <strong>B-link tree</strong>). Halaman internal dan leaf memiliki <em>high key</em> dan pointer <em>right-link</em> (sibling link) horizontal yang memungkinkan pembaca konkurensi (concurrent readers) langsung bergerak ke halaman saudara kanan saat terjadi page split tanpa mengunci (lock) node induk.
+              </p>
+              <div className="space-y-1 text-[12.5px] text-blue-900/90 pt-1">
+                <p>
+                  • <strong>Heap Tuple Identifier (ctid):</strong> Entri daun menyimpan pointer <code className="rounded bg-white/90 px-1.5 py-0.5 font-mono text-[11.5px] text-blue-950 border border-blue-200/60">(block, offset)</code> yang merujuk pada versi baris fisik saat ini di heap tabel. Nilai <code className="font-mono text-[11.5px]">ctid</code> bukan alamat disk permanen karena dapat berubah ketika baris di-UPDATE (MVCC menciptakan tuple versi baru) atau direorganisasi oleh VACUUM.
+                </p>
+                <p>
+                  • <strong>Dukungan Operator LIKE:</strong> Index support untuk prefix matching (<code className="font-mono text-[11.5px]">LIKE 'prefix%'</code>) bergantung pada database collation dan operator class. Pada non-C collation, operator class khusus seperti <code className="rounded bg-white/90 px-1.5 py-0.5 font-mono text-[11.5px] text-blue-950 border border-blue-200/60">text_pattern_ops</code> diperlukan. Pencarian substring tengah seperti <code className="font-mono text-[11.5px]">LIKE '%abc%'</code> umumnya membutuhkan strategi indexing berbeda, seperti <strong>GIN dengan pg_trgm</strong>.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <AnimatePresence mode="wait">
         <motion.div

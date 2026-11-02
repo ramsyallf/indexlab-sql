@@ -173,8 +173,18 @@ export const SpGistSimulator: React.FC = () => {
             </ol>
           </Card>
 
-          <Note tone="accent" icon={Info} title="Perbedaan Kunci GiST vs SP-GiST">
-            Pada GiST, kotak pembatas (MBR) antar cabang boleh saling tumpang-tindih. Pada SP-GiST, ruang dipotong secara tegas menjadi kuadran yang saling lepas (disjoint), sehingga satu titik koordinat dijamin hanya berada di satu cabang pohon.
+          <Note tone="accent" icon={Info} title="Karakteristik SP-GiST &amp; Partisi Ruang Non-Overlapping">
+            <p>
+              Pada GiST, kotak pembatas (MBR) antar cabang boleh saling tumpang-tindih. Sebaliknya, <strong>SP-GiST (Space-Partitioned GiST)</strong> membagi ruang pencarian menjadi partisi yang saling lepas (<em>disjoint / non-overlapping</em>).
+            </p>
+            <div className="mt-2 space-y-1 border-t border-line-soft/60 pt-2 text-[12.5px] text-ink-2">
+              <p>
+                • <strong>Quadtree (Titik 2D):</strong> Seperti pada simulator di samping, ruang koordinat 2D dipartisi menjadi 4 kuadran tegas (NW, NE, SW, SE) di sekitar titik centroid. Satu titik koordinat dijamin hanya berada di tepat satu kuadran.
+              </p>
+              <p>
+                • <strong>Radix Trie &amp; k-d Tree:</strong> Selain data spasial, SP-GiST mengindeks prefix teks dan alamat jaringan (<code className="font-mono text-[11.5px] bg-surface px-1 py-0.5 rounded">inet</code>) melalui pemotongan radix trie hierarkis non-overlapping.
+              </p>
+            </div>
           </Note>
         </div>
       </div>

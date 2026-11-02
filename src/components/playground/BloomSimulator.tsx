@@ -319,7 +319,17 @@ export const BloomSimulator: React.FC = () => {
       </Card>
 
       <Note tone="accent" icon={HelpCircle} title="Bagaimana Bloom Mengatasi Limitasi Multicolumn B-Tree?">
-        Pada Bloom Index, setiap kolom memiliki fungsi hash tersendiri yang menyalakan bit tertentu di signature. Pengguna dapat memfilter kolom mana saja (misal hanya staff_id dan rating) tanpa harus menyertakan leading column customer_id. Jika signature cocok, PostgreSQL melakukan pembacaan ulang (Bitmap Heap Scan Recheck) untuk memverifikasi kecocokan sebenarnya dan menyaring False Positive.
+        <p>
+          Pada Bloom Index, setiap kolom memiliki fungsi hash tersendiri yang menyalakan bit tertentu di signature bit array. Pengguna dapat memfilter kombinasi subset kolom mana saja (misal hanya staff_id dan rating) tanpa harus menyertakan leading column customer_id.
+        </p>
+        <div className="mt-2 space-y-1 border-t border-line-soft/60 pt-2 text-[12.5px] text-ink-2">
+          <p>
+            • <strong>Hanya Mendukung Equality (=):</strong> Bloom index bekerja melalui bitmask hashing per kolom, sehingga sama sekali tidak mendukung perbandingan (&lt;, &gt;), rentang BETWEEN, maupun pengurutan ORDER BY.
+          </p>
+          <p>
+            • <strong>Probabilistik &amp; Heap Recheck:</strong> Jika ada bit yang bernilai 0, baris <em>pasti tidak cocok</em> (Definite Exclusion). Jika seluruh bit bernilai 1, baris <em>mungkin cocok</em> (Probable Match). PostgreSQL selalu menjalankan <code className="font-mono text-[11.5px] bg-surface px-1 py-0.5 rounded">Bitmap Heap Scan Recheck</code> untuk memverifikasi nilai tuple asli dan mengeliminasi False Positive.
+          </p>
+        </div>
       </Note>
     </div>
   );

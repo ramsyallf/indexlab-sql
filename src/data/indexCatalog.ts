@@ -8,21 +8,22 @@ export const INDEX_METHODS: Record<IndexTypeId, IndexMethodSpec> = {
     badge: 'Equality · Range · Sort',
     tagline: 'Balanced Search Tree (nbtree) untuk pencarian ekuivalensi, rentang nilai, dan pengurutan.',
     summary:
-      'Metode indexing default di PostgreSQL. Menyimpan key secara terurut di dalam pohon berimbang (B+Tree) di mana Leaf Nodes saling terhubung dua arah (doubly-linked list) untuk memfasilitasi Range Scan dan ORDER BY tanpa pengurutan ulang.',
-    dataStructureName: 'B+Tree (Lehman & Yao High-Concurrency Variant)',
+      'PostgreSQL uses B-tree as its default index method. Its internal implementation is based on the Lehman–Yao high-concurrency B-tree approach, commonly described as a B-link tree. Leaf nodes dan internal nodes terhubung secara horizontal melalui right-link pointer (sibling link) untuk memastikan operasi baca (concurrent readers) tetap konsisten tanpa mengunci (lock) node induk saat terjadi split halaman.',
+    dataStructureName: 'B-link Tree (Lehman & Yao High-Concurrency B-tree)',
     howItWorks:
-      'Root dan Internal Node menyimpan separator key sebagai penunjuk arah cabang. Seluruh pasangan (key, ctid pointer baris) tersimpan secara terurut di Leaf Nodes yang saling terhubung secara horizontal.',
+      'Internal node menyimpan separator key beserta "high key" dan right-link (sibling pointer) horizontal ke halaman tetangga kanan. Seluruh pasangan (key, ctid) tersimpan secara terurut di Leaf Nodes yang juga saling terhubung secara horizontal. Catatan teknis: ctid (ItemPointer) adalah heap tuple identifier (nomor blok, nomor offset), bukan alamat disk permanen; nilainya berubah saat baris di-UPDATE atau di-VACUUM (MVCC).',
     searchMechanism:
-      'Dimulai dari Root Node, melakukan binary search di dalam slot node untuk memilih cabang anak, turun secara logaritmik O(log N) hingga Leaf Node. Untuk Range Query, cukup menelusuri pointer horizontal antar Leaf Node.',
-    supportedOperators: ['=', '<', '<=', '>', '>=', 'BETWEEN', 'IN', 'IS NULL', "LIKE 'prefix%'"],
+      'Dimulai dari Root Node, melakukan binary search di dalam slot halaman untuk memilih cabang anak secara logaritmik O(log N). Jika terjadi konkurensi atau split halaman bersamaan, reader menelusuri right-link (sibling link). Untuk Range Scan dan ORDER BY, pencarian langsung menyusuri right-link horizontal antar Leaf Node tanpa perlu kembali ke Root/Internal Node.',
+    supportedOperators: ['=', '<', '<=', '>', '>=', 'BETWEEN', 'IN', 'IS NULL', "LIKE 'prefix%'*"],
     suitableQueries: [
-      'Pencarian nilai spesifik (WHERE film_id = 45)',
-      'Pencarian rentang nilai atau tanggal (WHERE rental_rate BETWEEN 2.99 AND 4.99)',
-      'Pengurutan hasil query (ORDER BY rental_date ASC/DESC)',
-      'Pencarian awalan teks (WHERE title LIKE \'ACADEMY%\')',
+      'Pencarian baris spesifik (WHERE film_id = 45)',
+      'Pencarian rentang ID berurutan (WHERE film_id BETWEEN 30 AND 60)',
+      'Pengurutan hasil query (ORDER BY film_id ASC/DESC)',
+      'Pencarian keberadaan baris (WHERE film_id IN (20, 45, 70))',
     ],
     notSuitableFor: [
-      'Pencarian substring di tengah teks (LIKE \'%DINOSAUR%\') tanpa pg_trgm',
+      "Catatan LIKE 'prefix%': Index support for prefix matching depends on database collation and operator class. In some configurations, a pattern operator class such as text_pattern_ops is required (misal: CREATE INDEX ON film (title text_pattern_ops)).",
+      "Substring searches such as LIKE '%abc%' generally require a different indexing strategy, such as GIN with pg_trgm (trigram extension).",
       'Data array/JSONB dengan banyak elemen per baris (lebih cocok GIN)',
       'Data geometri/spasial 2D atau overlap poligon (lebih cocok GiST/SP-GiST)',
     ],
@@ -30,17 +31,18 @@ export const INDEX_METHODS: Record<IndexTypeId, IndexMethodSpec> = {
       'Serbaguna: menangani equality, comparison, range scan, dan sorting sekaligus',
       'Waktu pencarian konsisten O(log N) karena pohon selalu seimbang otomatis (self-balancing)',
       'Mendukung Index-Only Scan jika kolom yang dibutuhkan tersedia di leaf',
+      'Konkurensi tinggi berkat arsitektur Lehman–Yao B-link tree (right-link meminimalkan lock parent)',
     ],
     limitations: [
-      'Ukuran index relatif cukup besar (menyimpan setiap nilai key + pointer tuple)',
-      'Memiliki overhead penulisan (INSERT/UPDATE) ketika terjadi Node Split pada halaman penuh',
+      'Ukuran index bertambah proporsional dengan jumlah baris (menyimpan setiap key + ctid pointer)',
+      'Overhead penulisan (INSERT/UPDATE) ketika terjadi Page Split pada leaf/internal yang penuh',
     ],
     storageProfile: {
-      relativeSize: 'Sedang',
+      relativeSize: 'Sedang (Estimasi konseptual)',
       sizeScore: 60,
       buildCostScore: 55,
       writeOverheadScore: 55,
-      description: 'Menyimpan salinan key terurut beserta pointer tuple (ctid) di setiap leaf page 8KB.',
+      description: 'Menyimpan salinan key terurut beserta heap tuple identifier (ctid) di setiap leaf page 8KB. Ukuran aktual bergantung pada lebar tipe data, densitas key, dan fillfactor.',
     },
     operatorSupportMatrix: {
       equality: true,
@@ -51,7 +53,7 @@ export const INDEX_METHODS: Record<IndexTypeId, IndexMethodSpec> = {
       spatialGeometric: false,
       multiColumnArbitrary: false,
     },
-    defaultSqlExample: `CREATE INDEX idx_film_rental_rate\nON film (rental_rate);`,
+    defaultSqlExample: `CREATE INDEX idx_film_id\nON film (film_id);`,
   },
 
   btree_multicolumn: {
@@ -62,12 +64,12 @@ export const INDEX_METHODS: Record<IndexTypeId, IndexMethodSpec> = {
     isBonus: false,
     tagline: 'B-Tree pada lebih dari satu kolom dengan urutan prioritas leksikografis (Leading Column Rule).',
     summary:
-      'Mengindeks kombinasi beberapa kolom sekaligus, misalnya (customer_id, staff_id). Entri diurutkan berdasarkan kolom pertama (leading column) terlebih dahulu; kolom kedua hanya menjadi penentu urutan jika kolom pertama bernilai sama.',
-    dataStructureName: 'Composite Key B+Tree (Tuple-Ordered)',
+      'Mengindeks kombinasi beberapa kolom sekaligus, misalnya (customer_id, staff_id). Entri diurutkan berdasarkan kolom pertama (leading column) terlebih dahulu; kolom kedua hanya menjadi penentu urutan jika kolom pertama bernilai sama. Berbasis Lehman–Yao B-link tree yang diperluas untuk composite key.',
+    dataStructureName: 'Composite Key B-link Tree (Tuple-Ordered)',
     howItWorks:
-      'Setiap key di dalam node berupa pasangan komposit (k1, k2). Perbandingan dilakukan secara leksikografis: bandingkan k1 dulu; apabila k1 sama, baru bandingkan k2.',
+      'Setiap key di dalam node berupa pasangan komposit (k1, k2) beserta pointer ctid. Perbandingan dilakukan secara leksikografis: bandingkan k1 dulu; apabila k1 sama, baru bandingkan k2. Sibling link horizontal menghubungkan leaf page secara berurutan.',
     searchMechanism:
-      'Sangat efisien bila klausa WHERE menyertakan kolom pertama (leading column). Jika query hanya memfilter kolom kedua tanpa kolom pertama, pohon tidak bisa memangkas cabang dari Root sehingga harus memindai banyak leaf atau jatuh ke Seq Scan.',
+      'Sangat efisien bila klausa WHERE menyertakan kolom pertama (leading column). Jika query hanya memfilter kolom kedua tanpa kolom pertama, pohon tidak bisa memangkas cabang dari Root sehingga harus memindai seluruh leaf page atau optimizer memilih Seq Scan.',
     supportedOperators: ['= (pada leading col)', 'AND kombinasi kolom', 'Range pada kolom terakhir yang difilter'],
     suitableQueries: [
       'WHERE customer_id = 12 AND staff_id = 2 (Full Composite Match)',
@@ -84,14 +86,14 @@ export const INDEX_METHODS: Record<IndexTypeId, IndexMethodSpec> = {
     ],
     limitations: [
       'Terikat aturan Leading Column (urutan pendefinisian kolom sangat menentukan)',
-      'Ukuran index lebih besar dibandingkan single-column B-Tree',
+      'Ukuran index lebih besar dibandingkan single-column B-Tree karena menyimpan multi-field',
     ],
     storageProfile: {
-      relativeSize: 'Besar',
+      relativeSize: 'Besar (Estimasi konseptual)',
       sizeScore: 72,
       buildCostScore: 65,
       writeOverheadScore: 65,
-      description: 'Menyimpan gabungan beberapa kolom di setiap entri index.',
+      description: 'Menyimpan gabungan beberapa nilai kolom di setiap entri index beserta ctid. Ukuran membesar proporsional terhadap total lebar kolom komposit.',
     },
     operatorSupportMatrix: {
       equality: true,
@@ -112,16 +114,16 @@ export const INDEX_METHODS: Record<IndexTypeId, IndexMethodSpec> = {
     badge: 'Equality Only (=)',
     tagline: 'Pencarian ekuivalensi cepat berbasis fungsi hash 32-bit dan bucket.',
     summary:
-      'Mengonversi nilai kolom menjadi kode hash 32-bit menggunakan fungsi hash deterministik, lalu memetakannya ke dalam bucket. Hanya menyimpan nilai hash (bukan nilai asli yang panjang), namun HANYA mendukung operator sama dengan (=).',
-    dataStructureName: 'Hash Bucket Array + Overflow Chains',
+      'Mengonversi nilai kolom menjadi kode hash 32-bit menggunakan fungsi hash deterministik, lalu memetakannya ke dalam bucket array. Hanya menyimpan nilai hash 4-byte dan pointer heap tuple (ctid), namun HANYA mendukung operator sama dengan (=). Dilengkapi mekanisme recheck nilai asli untuk mengatasi potensi collision.',
+    dataStructureName: 'Hash Bucket Array + Overflow Pages',
     howItWorks:
-      'Nilai input dimasukkan ke fungsi hash h(k) mod M untuk menentukan nomor Bucket. Jika dua nilai berbeda menghasilkan bucket yang sama (Collision), entri ditambahkan ke rantai bucket/overflow page.',
+      'Nilai input di-hash menjadi 32-bit integer dan dipetakan ke nomor Bucket (h(k) mod N). Jika dua nilai berbeda jatuh pada bucket yang sama (Collision), entri disimpan pada overflow page berantai. Setiap entri memuat nilai hash dan heap tuple identifier (ctid).',
     searchMechanism:
-      'Menghitung hash dari nilai yang dicari O(1), langsung melompat ke Bucket tujuan, membandingkan hash code, lalu melakukan verifikasi nilai asli pada tuple tabel (recheck) untuk mengatasi potensi hash collision.',
+      'Menghitung hash dari nilai yang dicari O(1), langsung melompat ke Bucket tujuan, membandingkan hash code 32-bit, lalu melakukan verifikasi nilai asli pada tabel heap (tuple recheck) untuk memastikan kecocokan sebenarnya dan mengatasi hash collision.',
     supportedOperators: ['='],
     suitableQueries: [
       'Pencarian exact match pada string panjang/UUID/URL (WHERE rating = \'NC-17\')',
-      'Lookup kode unik atau kunci referensi dengan operator =',
+      'Lookup kode unik atau kunci referensi dengan operator ekuivalensi murni (=)',
     ],
     notSuitableFor: [
       'Range query (WHERE rental_rate > 2.99 atau BETWEEN)',
@@ -130,18 +132,19 @@ export const INDEX_METHODS: Record<IndexTypeId, IndexMethodSpec> = {
     ],
     advantages: [
       'Waktu akses rata-rata O(1) konstan untuk pencarian equality (=)',
-      'Ukuran index bisa lebih kecil dari B-Tree jika kolom aslinya berupa teks/bytea berukuran sangat panjang karena yang disimpan hanya 4-byte hash code',
+      'Ukuran index relatif ramping terutama jika kolom aslinya berupa teks/bytea panjang karena yang disimpan hanya kode hash 4-byte + ctid',
+      'Sejak PostgreSQL 10, Hash Index sudah WAL-logged dan aman untuk crash recovery serta replikasi',
     ],
     limitations: [
       'Sama sekali tidak mendukung operator perbandingan (<, >), BETWEEN, maupun ORDER BY',
       'Tidak mendukung multicolumn index maupun unique constraint di PostgreSQL',
     ],
     storageProfile: {
-      relativeSize: 'Kecil',
+      relativeSize: 'Kecil / Ringkas (Estimasi konseptual)',
       sizeScore: 45,
       buildCostScore: 45,
       writeOverheadScore: 50,
-      description: 'Hanya menyimpan nilai hash 32-bit beserta pointer tuple ctid di dalam bucket.',
+      description: 'Menyimpan nilai hash 32-bit beserta heap tuple identifier (ctid) di dalam bucket page. Ukuran aktual ditentukan oleh jumlah baris dan faktor pengisian bucket.',
     },
     operatorSupportMatrix: {
       equality: true,
@@ -162,36 +165,37 @@ export const INDEX_METHODS: Record<IndexTypeId, IndexMethodSpec> = {
     badge: 'Array · JSONB · Full-Text',
     tagline: 'Inverted Index untuk nilai majemuk (multi-value): Array, JSONB, dan Full-Text Search.',
     summary:
-      'Dirancang untuk kolom yang berisi banyak elemen di dalam satu baris (seperti kata-kata dalam dokumen, elemen Array, atau key-value JSONB). Memetakan setiap elemen/token unik ke daftar baris (Posting List) tempat elemen tersebut muncul.',
-    dataStructureName: 'B-Tree of Keys/Tokens → Posting List (ctid Array / Posting Tree)',
+      'Dirancang untuk kolom yang berisi banyak elemen di dalam satu baris (seperti kata-kata dalam dokumen, elemen Array, atau key-value JSONB). Mengorganisasi data sebagai Inverted Index di mana setiap elemen komponen (token unik) dipetakan ke daftar baris (Posting List / Posting Tree).',
+    dataStructureName: 'Inverted Index: B-Tree of Entry Keys → Posting List (ctid array / Posting Tree)',
     howItWorks:
-      'Setiap baris dipecah (tokenized) menjadi elemen-elemen penyusunnya. Setiap elemen unik disimpan satu kali di dalam kamus (entry tree) dan menunjuk ke daftar terurut ID baris (Posting List) yang memuat elemen tersebut.',
+      'Setiap baris dipecah (tokenized) menjadi elemen-elemen penyusunnya. Setiap elemen unik disimpan satu kali di dalam entry tree (B-Tree internal) dan menunjuk ke daftar terurut heap tuple identifier (Posting List / Posting Tree jika daftar sangat panjang).',
     searchMechanism:
-      'Mencari token yang diminta di dalam kamus index, mengambil Posting List masing-masing token, lalu melakukan operasi himpunan (Intersection AND untuk @> atau Union OR untuk &&) pada daftar ID baris.',
+      'Mencari komponen token yang diminta di dalam kamus entry tree, mengambil Posting List masing-masing token, lalu melakukan operasi himpunan secara efisien melalui Bitmap Index Scan (irisan AND untuk @> atau gabungan OR untuk &&).',
     supportedOperators: ['@>', '<@', '&&', '?', '?|', '?&', '@@ (tsquery)'],
     suitableQueries: [
       'Pencarian elemen di dalam kolom Array (WHERE special_features @> ARRAY[\'Trailers\'])',
       'Pencarian struktur JSONB (WHERE metadata @> \'{"language": "Japanese"}\')',
       'Full-Text Search dokumen (WHERE fulltext @@ to_tsquery(\'dinosaur & drama\'))',
+      'Pencarian substring trigram dengan ekstensi pg_trgm (WHERE title LIKE \'%abc%\')',
     ],
     notSuitableFor: [
       'Kolom skalar sederhana (angka tunggal/tanggal) yang cukup ditangani B-Tree',
-      'Tabel dengan frekuensi UPDATE/INSERT ekstrem tanpa tuning fastupdate',
+      'Tabel dengan frekuensi UPDATE/INSERT ekstrem tanpa konfigurasi fastupdate = on',
     ],
     advantages: [
       'Sangat cepat untuk menemukan baris yang mengandung elemen tertentu di dalam Array, JSONB, atau dokumen teks panjang',
-      'Mampu menggabungkan beberapa syarat token melalui operasi bitmap/posting list intersection',
+      'Mampu menggabungkan beberapa syarat token melalui operasi bitmap posting list intersection',
     ],
     limitations: [
       'Biaya pembuatan index dan overhead penulisan (INSERT/UPDATE) tinggi karena satu baris baru dapat memodifikasi puluhan posting list sekaligus',
-      'Ukuran index dapat menjadi cukup besar pada dokumen dengan kosakata sangat beragam',
+      'Ukuran index dapat menjadi sangat besar pada dokumen dengan kosakata sangat beragam',
     ],
     storageProfile: {
-      relativeSize: 'Besar',
+      relativeSize: 'Besar (Estimasi konseptual)',
       sizeScore: 80,
       buildCostScore: 85,
       writeOverheadScore: 85,
-      description: 'Menyimpan pohon kamus token beserta daftar posting list ctid untuk setiap token.',
+      description: 'Menyimpan pohon kamus token unik beserta daftar posting list ctid untuk setiap token. Ukuran sangat dipengaruhi oleh kardinalitas dan keanekaragaman elemen/token.',
     },
     operatorSupportMatrix: {
       equality: false,
@@ -212,35 +216,35 @@ export const INDEX_METHODS: Record<IndexTypeId, IndexMethodSpec> = {
     badge: 'Geometric · Spatial · Range',
     tagline: 'Struktur pohon berbasis Bounding Region (R-Tree) untuk data spasial, geometri, dan rentang.',
     summary:
-      'Framework pohon berimbang yang membagi data ke dalam wilayah pembatas (Minimum Bounding Rectangle / MBR) yang boleh saling tumpang-tindih (overlapping). Sangat ideal untuk data koordinat 2D, poligon PostGIS, dan tipe range.',
-    dataStructureName: 'Balanced Bounding-Box Hierarchy (R-Tree over GiST)',
+      'Framework pohon berimbang extensible yang membagi data ke dalam wilayah pembatas (Minimum Bounding Rectangle / MBR) yang boleh saling tumpang-tindih (overlapping). Operator yang didukung sangat bergantung pada operator class yang digunakan (misal: gist_geometry_ops_2d untuk geometri, range_ops untuk rentang tanggal).',
+    dataStructureName: 'Generalized Search Tree (R-Tree / Bounding Region Hierarchy)',
     howItWorks:
-      'Setiap node internal menyimpan kotak pembatas (Bounding Box) yang membungkus seluruh objek geometri pada cabangnya. Berbeda dengan SP-GiST, kotak pembatas antar cabang pada GiST dapat saling tumpang-tindih.',
+      'Setiap node internal menyimpan predikat pembatas (Bounding Box / MBR) yang membungkus seluruh objek geometri/rentang pada cabangnya. Operator class menentukan fungsi konsistensi, penyatuan (union), dan penalti pemisahan (picksplit). Kotak pembatas antar cabang pada GiST diperbolehkan saling tumpang-tindih.',
     searchMechanism:
-      'Memeriksa apakah wilayah query berpotongan (intersects/overlaps) dengan Bounding Box suatu node. Jika tidak berpotongan, seluruh cabang dieliminasi; jika berpotongan, telusuri cabang tersebut (bisa lebih dari satu cabang jika MBR tumpang-tindih).',
+      'Memeriksa apakah wilayah query berpotongan (intersects/overlaps) dengan Bounding Box suatu node. Cabang yang tidak berpotongan langsung dieliminasi (pruning). Jika ada beberapa MBR tumpang-tindih yang sama-sama berpotongan, pencarian menelusuri seluruh cabang terkait hingga leaf.',
     supportedOperators: ['&& (overlap)', '@> (contains)', '<@ (contained by)', '<-> (Nearest Neighbor KNN)', '<<', '>>'],
     suitableQueries: [
       'Pencarian lokasi dalam area kotak/poligon (WHERE location && box \'((2,2),(6,6))\')',
       'Pencarian K-Nearest Neighbor / lokasi terdekat (ORDER BY location <-> point \'(4,5)\' LIMIT 5)',
-      'Deteksi tumpang-tindih jadwal/periode waktu (tsrange && tsrange)',
+      'Deteksi tumpang-tindih jadwal/periode waktu menggunakan tipe range (tsrange && tsrange)',
     ],
     notSuitableFor: [
-      'Pencarian ekuivalensi angka/teks biasa (B-Tree jauh lebih efisien)',
+      'Pencarian ekuivalensi angka/teks standar 1D (B-Tree jauh lebih efisien)',
     ],
     advantages: [
       'Mendukung query multidimensi, geometri, poligon, dan Nearest-Neighbor (<->) secara native',
-      'Fleksibel untuk berbagai tipe data kompleks yang memiliki konsep containment atau overlap',
+      'Fleksibel untuk berbagai tipe data kompleks melalui operator class khusus (geometri, rentang, trigram)',
     ],
     limitations: [
-      'Karena Bounding Box antar cabang boleh tumpang-tindih (overlap), satu pencarian kadang harus menelusuri beberapa cabang sekaligus',
-      'Waktu pencarian dan ukuran index lebih besar dibandingkan B-Tree untuk data 1 dimensi',
+      'Karena Bounding Box antar cabang boleh tumpang-tindih (overlap), pencarian titik kadang harus menelusuri beberapa cabang sekaligus',
+      'Waktu pencarian dan ukuran index lebih besar dibandingkan B-Tree untuk data skalar 1 dimensi',
     ],
     storageProfile: {
-      relativeSize: 'Besar',
+      relativeSize: 'Sedang - Besar (Estimasi konseptual)',
       sizeScore: 75,
       buildCostScore: 70,
       writeOverheadScore: 70,
-      description: 'Menyimpan predikat bounding box pada setiap level internal dan leaf.',
+      description: 'Menyimpan predikat bounding box (MBR) pada setiap level internal dan leaf page. Ukuran aktual dipengaruhi oleh operator class dan tingkat overlap objek.',
     },
     operatorSupportMatrix: {
       equality: true,
@@ -261,35 +265,35 @@ export const INDEX_METHODS: Record<IndexTypeId, IndexMethodSpec> = {
     badge: 'Big Data · Correlated Blocks',
     tagline: 'Index super ringkas yang menyimpan ringkasan Min-Max per rentang blok fisik untuk tabel berukuran masif.',
     summary:
-      'Alih-alih mengindeks setiap baris satu per satu, BRIN membagi tabel menjadi rentang blok disk fisik (pages_per_range) dan hanya menyimpan nilai Minimum serta Maksimum pada setiap blok. Sangat hemat ruang untuk data time-series/log yang terurut secara fisik.',
+      'Alih-alih mengindeks setiap baris satu per satu, BRIN membagi tabel menjadi rentang blok disk fisik (pages_per_range) dan hanya menyimpan nilai Minimum serta Maksimum pada setiap rentang blok. Bersifat lossy, sehingga baris di dalam blok yang lolos seleksi harus diuji ulang (Bitmap Heap Scan Recheck). Sangat hemat ruang untuk data time-series/log yang terurut secara fisik.',
     dataStructureName: 'Block Range Summary Array (BlockNumber → [Min, Max])',
     howItWorks:
-      'Untuk setiap rentang halaman fisik di disk (misalnya Blok 0, Blok 1, dst.), BRIN mencatat nilai terkecil (min) dan terbesar (max) yang ada di dalam blok tersebut.',
+      'Untuk setiap rentang halaman fisik di disk (misalnya default 128 halaman = 1MB), BRIN mencatat nilai terkecil (min) dan terbesar (max). Efektivitas eliminasi blok sangat ditentukan oleh korelasi urutan fisik data di disk (Physical Row Order Correlation).',
     searchMechanism:
-      'Membandingkan kondisi query dengan pasangan [Min, Max] tiap blok. Blok yang rentang [Min, Max]-nya tidak mungkin memuat nilai dicari langsung dilewati (Block Elimination). Blok yang cocok kemudian dipindai baris-per-barisnya.',
+      'Membandingkan kondisi query WHERE dengan rentang [Min, Max] tiap blok range. Rentang blok yang tidak mungkin memuat nilai query langsung dieliminasi (Block Elimination - 0 disk I/O). Pada rentang blok yang lolos seleksi, PostgreSQL melakukan Bitmap Heap Scan dengan recheck baris per baris (Lossy Recheck).',
     supportedOperators: ['=', '<', '<=', '>', '>=', 'BETWEEN'],
     suitableQueries: [
-      'Tabel log/transaksi berukuran puluhan juta baris di mana kolom waktu (rental_date) selalu bertambah seiring urutan insert',
-      'Data sensor IoT atau histori pembayaran berurutan waktu',
+      'Tabel log/transaksi berukuran puluhan juta baris di mana kolom waktu (rental_date) selalu bertambah seiring urutan insert fisik',
+      'Data sensor IoT atau histori pembayaran berurutan waktu (korelasi mendekati 1.0 atau -1.0)',
     ],
     notSuitableFor: [
-      'Tabel yang datanya tersebar acak secara fisik (korelasi fisik rendah menyebabkan setiap blok memiliki min-max yang lebar sehingga tidak ada blok yang bisa dieliminasi)',
+      'Tabel yang datanya tersebar acak secara fisik (korelasi fisik rendah menyebabkan setiap blok memiliki min-max yang lebar sehingga eliminasi blok gagal)',
       'Pencarian titik tunggal pada tabel kecil yang membutuhkan presisi tinggi (gunakan B-Tree)',
     ],
     advantages: [
-      'Ukuran index luar biasa kecil (seringkali 100x–1000x lebih kecil daripada B-Tree)',
-      'Overhead INSERT dan pemeliharaan sangat ringan',
+      'Ukuran index luar biasa kecil (seringkali 100x–1000x lebih kecil daripada B-Tree, umumnya hanya ~0.1% ukuran tabel)',
+      'Overhead INSERT dan pemeliharaan vacuum sangat ringan',
     ],
     limitations: [
-      'Bersifat lossy: harus tetap membaca seluruh baris di dalam blok yang lolos seleksi',
+      'Bersifat lossy: harus tetap membaca seluruh baris di dalam blok yang lolos seleksi (memerlukan Heap Recheck)',
       'Sangat bergantung pada korelasi urutan fisik data di disk (Physical Correlation)',
     ],
     storageProfile: {
-      relativeSize: 'Sangat Kecil',
+      relativeSize: 'Sangat Kecil (~0.1% tabel, Estimasi konseptual)',
       sizeScore: 8,
       buildCostScore: 15,
       writeOverheadScore: 10,
-      description: 'Hanya beberapa byte (min & max) untuk setiap ratusan halaman tabel (default 128 pages = 1MB data).',
+      description: 'Hanya beberapa byte ringkasan (min & max) untuk setiap rentang halaman tabel (default 128 pages = 1MB data). Ukuran aktual ditentukan oleh parameter pages_per_range.',
     },
     operatorSupportMatrix: {
       equality: true,
@@ -310,34 +314,34 @@ export const INDEX_METHODS: Record<IndexTypeId, IndexMethodSpec> = {
     badge: 'Space Partitioning · Quadtree / Trie',
     tagline: 'Pohon partisi ruang non-overlapping (Quadtree, k-d tree, Radix Trie) untuk data dengan klaster tidak merata.',
     summary:
-      'Membagi ruang pencarian menjadi partisi-partisi yang TIDAK saling tumpang-tindih (non-overlapping), seperti Quadtree (4 kuadran NW, NE, SW, SE) atau Prefix Trie. Sangat efektif ketika data menumpuk di area tertentu (skewed data).',
-    dataStructureName: 'Non-Overlapping Space Partition Tree (Quadtree / Radix Tree)',
+      'Membagi ruang pencarian menjadi partisi-partisi yang TIDAK saling tumpang-tindih (disjoint / non-overlapping), seperti Quadtree (4 kuadran NW, NE, SW, SE) untuk titik 2D, k-d tree, atau Radix Trie untuk prefix teks/IP. Sangat efektif untuk data dengan distribusi tidak merata (skewed data).',
+    dataStructureName: 'Space-Partitioned Tree (Disjoint Quadtree / Radix Trie)',
     howItWorks:
-      'Ruang 2D (atau ruang prefix teks/IP) dibagi secara rekursif menjadi kuadran/partisi yang saling lepas (disjoint) setiap kali jumlah titik di dalam suatu kuadran melampaui kapasitas maksimum.',
+      'Ruang 2D (atau ruang prefix teks/IP) dibagi secara rekursif menjadi partisi-partisi yang saling lepas (disjoint) setiap kali jumlah titik di dalam suatu wilayah melampaui kapasitas simpul. Titik centroid menjadi pembagi batas tegas antar partisi.',
     searchMechanism:
-      'Karena partisi tidak pernah tumpang-tindih, pencarian satu titik (point lookup) hanya perlu mengikuti tepat SATU jalur kuadran dari Root ke Leaf. Pencarian kotak (box query) hanya memeriksa kuadran yang berpotongan dengan area pencarian.',
+      'Karena partisi tidak pernah tumpang-tindih, pencarian titik tunggal (point lookup) hanya perlu mengikuti tepat SATU jalur simpul dari Root ke Leaf tanpa risiko backtracking ganda. Pencarian kotak batas hanya memeriksa kuadran yang berpotongan secara geometris.',
     supportedOperators: ['=', '&&', '<@', '@>', '^@ (starts with)', '<<', '>>'],
     suitableQueries: [
-      'Data koordinat titik (point) dengan kepadatan tidak merata (misal peta lokasi pelanggan di pusat kota vs pedesaan)',
-      'Data berstruktur hierarki prefix seperti alamat IP (inet), nomor telepon, atau URL',
+      'Data koordinat titik (point) dengan kepadatan tidak merata (misal klaster padat di perkotaan vs renggang di pedesaan)',
+      'Data berstruktur hierarki prefix seperti alamat IP (inet), nomor telepon, atau URL menggunakan operator ^@',
     ],
     notSuitableFor: [
-      'Objek poligon besar yang melintasi banyak batas kuadran sekaligus (lebih cocok GiST R-Tree)',
+      'Objek poligon besar yang melintasi banyak batas partisi sekaligus (lebih cocok GiST R-Tree)',
     ],
     advantages: [
       'Partisi tidak pernah tumpang-tindih (non-overlapping), sehingga pencarian titik tidak pernah bercabang ganda',
-      'Kedalaman pohon dapat menyesuaikan kepadatan lokal data (adaptive depth)',
+      'Kedalaman pohon menyesuaikan kepadatan lokal data (adaptive depth partitioning)',
     ],
     limitations: [
-      'Pohon bisa menjadi tidak seimbang (unbalanced) pada area yang sangat padat titik',
-      'Kurang cocok untuk objek berdimensi luas yang memotong garis batas partisi',
+      'Pohon bisa menjadi tidak seimbang (unbalanced) pada wilayah yang sangat padat titik klaster',
+      'Kurang cocok untuk objek berdimensi poligon luas yang memotong batas kuadran',
     ],
     storageProfile: {
-      relativeSize: 'Sedang',
+      relativeSize: 'Sedang (Estimasi konseptual)',
       sizeScore: 55,
       buildCostScore: 60,
       writeOverheadScore: 55,
-      description: 'Menyimpan titik pusat partisi (centroid/prefix) dan pointer ke sub-kuadran.',
+      description: 'Menyimpan titik centroid partisi non-overlapping atau simpul prefix radix trie. Ukuran aktual dipengaruhi oleh kedalaman partisi dan distribusi sebaran data.',
     },
     operatorSupportMatrix: {
       equality: true,
@@ -359,35 +363,35 @@ export const INDEX_METHODS: Record<IndexTypeId, IndexMethodSpec> = {
     requiresExtension: 'CREATE EXTENSION IF NOT EXISTS bloom;',
     tagline: 'Filter probabilistik berbasis Bit Array untuk query multi-kolom dengan kombinasi filter bebas.',
     summary:
-      'Menggunakan struktur Bloom Filter (signature bit array per baris) untuk mengindeks banyak kolom sekaligus. Mengatasi kelemahan Multicolumn B-Tree karena mahasiswa/aplikasi dapat memfilter kombinasi kolom mana saja tanpa terikat urutan kolom pertama.',
+      'Menggunakan struktur Bloom Filter (signature bit array per baris tuple) untuk mengindeks banyak kolom sekaligus. Mengatasi kelemahan Multicolumn B-Tree karena aplikasi dapat memfilter kombinasi subset kolom mana saja tanpa terikat urutan kolom pertama. Bersifat probabilistik (false positive disaring melalui heap recheck) dan hanya mendukung operator ekuivalensi (=).',
     dataStructureName: 'Per-Tuple Bit Signature Array + K Hash Functions',
     howItWorks:
-      'Setiap nilai kolom pada sebuah baris di-hash oleh beberapa fungsi hash (h1, h2, ...) untuk menyalakan bit (menjadi 1) pada posisi tertentu di dalam signature bit sepanjang M bit.',
+      'Setiap nilai kolom pada sebuah baris di-hash oleh beberapa fungsi hash independen (h1, h2, ...) untuk menyalakan bit (menjadi 1) pada posisi tertentu di dalam signature bit sepanjang M bit (default 80-bit per tuple).',
     searchMechanism:
-      'Menghitung posisi bit dari kolom-kolom yang dicari di klausa WHERE. Jika ada SATU saja bit yang bernilai 0 pada signature baris, baris tersebut PASTI TIDAK COCOK (Definite No). Jika semua bit bernilai 1, baris tersebut MUNGKIN COCOK (Probable Match) dan PostgreSQL akan melakukan Heap Recheck untuk menyaring False Positive.',
+      'Menghitung bitmask dari kolom-kolom yang difilter pada klausa WHERE. Jika ada SATU saja bit yang bernilai 0 pada signature baris, baris tersebut PASTI TIDAK COCOK (Definite No). Jika seluruh bit bernilai 1, baris tersebut MUNGKIN COCOK (Probable Match) dan PostgreSQL akan menjalankan Bitmap Heap Scan Recheck untuk menyaring False Positive.',
     supportedOperators: ['= (pada kombinasi subset kolom mana pun)'],
     suitableQueries: [
-      'Tabel lebar dengan banyak kolom atribut (customer_id, staff_id, store_id, status) di mana user sering mencari kombinasi kolom secara acak',
-      'Menggantikan pembuatan 5–10 index B-Tree terpisah untuk kombinasi filter ekuivalensi (=)',
+      'Tabel lebar dengan banyak kolom atribut (customer_id, staff_id, store_id, status) di mana query memfilter kombinasi kolom secara acak',
+      'Menggantikan pembuatan 5–10 index komposit B-Tree terpisah untuk kombinasi filter ekuivalensi (=)',
     ],
     notSuitableFor: [
       'Range query (<, >, BETWEEN) atau pengurutan (ORDER BY)',
-      'Pencarian kolom tunggal biasa (B-Tree atau Hash jauh lebih cepat)',
+      'Pencarian kolom tunggal biasa (B-Tree atau Hash jauh lebih cepat dan tanpa false positive)',
     ],
     advantages: [
-      'Bebas urutan kolom: tetap bekerja meskipun kolom pertama tidak disertakan dalam WHERE',
-      'Satu index Bloom berukuran ringkas dapat menggantikan banyak index komposit',
+      'Bebas urutan kolom: tetap bekerja optimal meskipun kolom pertama tidak disertakan dalam WHERE',
+      'Satu index Bloom berukuran ringkas dapat melayani berbagai variasi kombinasi filter ekuivalensi',
     ],
     limitations: [
-      'Bersifat probabilistik: menghasilkan False Positive sehingga memerlukan pembacaan ulang baris tabel (Heap Recheck)',
-      'Hanya mendukung operator equality (=) dan memerlukan ekstensi tambahan (`bloom`)',
+      'Bersifat probabilistik: menghasilkan False Positive sehingga memerlukan pembacaan ulang baris tabel fisik (Heap Recheck)',
+      'Hanya mendukung operator equality (=) dan memerlukan ekstensi contrib tambahan (`bloom`)',
     ],
     storageProfile: {
-      relativeSize: 'Kecil',
+      relativeSize: 'Kecil / Kompak (Estimasi konseptual)',
       sizeScore: 30,
       buildCostScore: 40,
       writeOverheadScore: 35,
-      description: 'Menyimpan signature bit ringkas (default 80 bit / 10 byte per baris) beserta ctid.',
+      description: 'Menyimpan signature bit ringkas (default 80 bit / 10 byte per baris) beserta ctid. Ukuran aktual ditentukan oleh parameter length bit signature dan jumlah baris.',
     },
     operatorSupportMatrix: {
       equality: true,
@@ -417,14 +421,60 @@ export const SQL_EXPLORER_EXAMPLES: SqlExampleItem[] = [
   {
     id: 'sql-btree-create',
     indexType: 'btree',
-    title: 'B-Tree Index pada film(rental_rate)',
+    title: 'B-Tree Index pada film(film_id)',
     category: 'CREATE INDEX',
-    tableContext: 'film (1.000 baris contoh / skala produksi)',
+    tableContext: 'film (1.000 baris, primary key / integer id)',
     description:
-      'Membuat index B-Tree standar pada kolom numerik rental_rate. Mendukung pencarian =, <, >, BETWEEN, dan ORDER BY.',
-    sql: `-- Membuat B-Tree Index (USING BTREE bersifat opsional karena default)\nCREATE INDEX idx_film_rental_rate\nON film (rental_rate);\n\n-- Menguji dengan EXPLAIN ANALYZE untuk Range Query\nEXPLAIN ANALYZE\nSELECT film_id, title, rental_rate\nFROM film\nWHERE rental_rate BETWEEN 0.99 AND 2.99\nORDER BY rental_rate ASC;`,
+      'Membuat B-Tree Index standar (Lehman–Yao B-link tree) pada kolom film_id. Mendukung pencarian =, rentang BETWEEN, IN, dan ORDER BY ASC/DESC tanpa perlu pengurutan ulang.',
+    sql: `-- Membuat B-Tree Index standar (USING BTREE bersifat opsional karena default)
+CREATE INDEX idx_film_id
+ON film (film_id);
+
+-- 1. Equality Search (=)
+EXPLAIN ANALYZE
+SELECT film_id, title, rental_rate
+FROM film
+WHERE film_id = 45;
+
+-- 2. Range Scan (BETWEEN) & ORDER BY langsung dari daun pohon (leaf)
+EXPLAIN ANALYZE
+SELECT film_id, title, rental_rate
+FROM film
+WHERE film_id BETWEEN 30 AND 60
+ORDER BY film_id ASC;`,
     expectedPlanNote:
-      'PostgreSQL memilih Index Scan atau Bitmap Index Scan pada idx_film_rental_rate, serta menghindari langkah Sort tambahan bila menggunakan Index Scan.',
+      'PostgreSQL memilih Index Scan pada idx_film_id untuk melompat langsung ke leaf awal dan menyusuri sibling right-link. Query ORDER BY tidak memerlukan langkah Sort tambahan di memori.',
+  },
+  {
+    id: 'sql-btree-pattern',
+    indexType: 'btree',
+    title: 'B-Tree Prefix Matching (text_pattern_ops) vs Substring',
+    category: 'EXTENSION & TUNING',
+    tableContext: 'film (kolom teks title)',
+    description:
+      'Catatan teknis operator class: Pada non-C collation, B-tree membutuhkan text_pattern_ops untuk mengoptimalkan LIKE "prefix%". Sedangkan substring LIKE "%abc%" membutuhkan GIN dengan pg_trgm.',
+    sql: `-- 1. B-Tree untuk awalan teks (Prefix Matching) dengan operator class khusus
+CREATE INDEX idx_film_title_prefix
+ON film (title text_pattern_ops);
+
+-- Efisien menggunakan B-Tree Index Scan:
+EXPLAIN ANALYZE
+SELECT film_id, title
+FROM film
+WHERE title LIKE 'ACADEMY%';
+
+-- 2. Substring pencarian tengah teks (TIDAK BISA memakai B-Tree biasa)
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE INDEX idx_film_title_trgm
+ON film USING GIN (title gin_trgm_ops);
+
+-- Menggunakan GIN Bitmap Index Scan untuk substring sembarang:
+EXPLAIN ANALYZE
+SELECT film_id, title
+FROM film
+WHERE title LIKE '%DINOSAUR%';`,
+    expectedPlanNote:
+      'Query #1 memanfaatkan B-tree index scan berkat text_pattern_ops. Query #2 memanfaatkan GIN trigram index scan untuk memecah pola kata menjadi 3-huruf (trigram).',
   },
   {
     id: 'sql-btree-multi',

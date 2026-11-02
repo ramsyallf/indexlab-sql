@@ -90,11 +90,11 @@ export const PerformanceLabView: React.FC = () => {
     <div className="space-y-6">
       <PageHeader
         title="Query Performance Lab"
-        subtitle="Simulasikan perbandingan rencana eksekusi (EXPLAIN ANALYZE), waktu proses, dan blok data antara Sequential Scan dan Index Scan."
+        subtitle="Simulasi komparatif rencana eksekusi konseptual (EXPLAIN ANALYZE), estimasi baris & blok dipindai, dan estimasi waktu proses antara Sequential Scan dan Index Scan."
         accessory={
           <Tag tone="warn" className="gap-1">
             <Info className="h-3 w-3" />
-            Mode Simulasi
+            Simulasi Edukatif Konseptual
           </Tag>
         }
       />
@@ -214,7 +214,7 @@ export const PerformanceLabView: React.FC = () => {
               {/* Metrics */}
               <div className="mt-4 grid grid-cols-2 gap-2">
                 <Stat
-                  label="Estimasi Waktu"
+                  label="Waktu (Estimasi Konseptual)"
                   value={`${p.data.simulatedTimeMs} ms`}
                   tone={idx === 0 ? 'bad' : 'ok'}
                 />
@@ -228,7 +228,7 @@ export const PerformanceLabView: React.FC = () => {
                   value={p.data.rowsReturned.toLocaleString('id-ID')}
                 />
                 <Stat
-                  label="Ukuran Index"
+                  label="Ukuran Index (Estimasi)"
                   value={`${p.data.indexSizeKb.toLocaleString('id-ID')} KB`}
                 />
               </div>
@@ -293,7 +293,7 @@ export const PerformanceLabView: React.FC = () => {
           <div className="mb-4 flex items-center gap-2">
             <Gauge className="h-4 w-4 text-ok" />
             <h3 className="text-[17px] font-semibold tracking-tight text-ink">
-              Waktu Eksekusi (ms) vs Ukuran Index (KB)
+              Waktu Simulasi (Konseptual ms) vs Estimasi Ukuran Index (KB)
             </h3>
           </div>
           <div className="h-64 w-full">
@@ -329,6 +329,10 @@ export const PerformanceLabView: React.FC = () => {
           </div>
         </Card>
       </div>
+
+      <Note tone="neutral" icon={Info} title="Transparansi Edukasi: Model Simulasi vs PostgreSQL Sungguhan">
+        Seluruh metrik performa (estimasi waktu milidetik, jumlah blok dibaca, dan output EXPLAIN ANALYZE) merupakan <strong>simulasi algoritmik konseptual</strong> untuk memvisualisasikan kompleksitas O(log N) vs O(N) dan penghematan disk I/O. Angka waktu eksekusi bukan hasil stopwatch fisik PostgreSQL engine dan tidak merefleksikan hardware caching, buffer pool, atau konkurensi multi-user riil.
+      </Note>
     </div>
   );
 };

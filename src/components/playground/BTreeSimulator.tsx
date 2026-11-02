@@ -182,7 +182,7 @@ export const BTreeSimulator: React.FC<BTreeSimulatorProps> = ({ mode = 'single' 
             <p className="mt-0.5 text-[12.5px] text-ink-2">
               {isMulti
                 ? 'Composite key terurut leksikografis · Wajib menyertakan leading column untuk index scan optimal'
-                : 'Key integer tunggal terurut Lehman & Yao B+Tree dengan leaf page berantai'}
+                : 'Key integer tunggal terurut Lehman & Yao B-link tree dengan right-link sibling pointer'}
             </p>
           </div>
 
@@ -298,11 +298,11 @@ export const BTreeSimulator: React.FC<BTreeSimulatorProps> = ({ mode = 'single' 
           title={active?.title}
           explanation={active?.explanation}
           idleTitle="Pilih operasi, lalu jalankan"
-          idleText="PostgreSQL memakai varian B+Tree (Lehman & Yao). Internal node hanya menyimpan separator key sebagai penunjuk arah, sedangkan pointer baris (ctid) tersimpan terurut di leaf page yang saling terhubung."
+          idleText="PostgreSQL menggunakan implementasi B-tree berbasis Lehman–Yao high-concurrency algorithm (B-link tree). Internal node menyimpan separator key dan right-link (sibling pointer) horizontal. Pasangan key dan ctid disimpan di leaf page. Catatan teknis: ctid (block, offset) merupakan heap tuple identifier, bukan alamat fisik permanen (nilainya dapat berubah saat baris di-UPDATE atau di-VACUUM)."
         >
           {found.length > 0 && stepIdx === steps.length - 1 && (
             <div className="mt-4 border-t border-line-soft pt-4">
-              <p className="mb-2 text-[13px] font-medium text-ink">Tuple dikembalikan · {found.length} baris</p>
+              <p className="mb-2 text-[13px] font-medium text-ink">Tuple dikembalikan · {found.length} baris (ctid = heap tuple identifier)</p>
               <div className="flex flex-wrap gap-1.5">
                 {found.map((f, i) => (
                   <Tag key={`${f.ctid}-${i}`} tone="ok" mono>

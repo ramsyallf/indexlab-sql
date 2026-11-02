@@ -205,6 +205,9 @@ export const BrinSimulator: React.FC = () => {
             berpotongan dengan hampir seluruh blok, sehingga eliminasi blok gagal bekerja optimal.
           </p>
         )}
+        <p className="mt-2 border-t border-line-soft/60 pt-2 text-[12.5px] text-ink-2">
+          <strong>Sifat Lossy &amp; Heap Recheck:</strong> BRIN bersifat <em>lossy</em> karena index hanya menyimpan ringkasan rentang per blok, bukan pointer ke baris individual. Ketika sebuah blok lolos eliminasi, PostgreSQL menjalankan <code className="font-mono text-[11.5px] bg-surface px-1 py-0.5 rounded">Bitmap Heap Scan</code> dan membaca baris di blok tersebut untuk memverifikasi (<em>recheck</em>) apakah baris benar-benar memenuhi kondisi WHERE.
+        </p>
       </Note>
     </div>
   );

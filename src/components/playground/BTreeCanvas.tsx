@@ -131,9 +131,9 @@ export const BTreeCanvas: React.FC<BTreeCanvasProps> = ({ root, currentStep, isM
       <div className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-ink-2">
         <LegendDot color={P.accent} label="Sedang diperiksa" />
         <LegendDot color={P.okFill} label="Cocok" />
-        <LegendDot color={P.warnFill} label="Sibling link aktif" />
-        <LegendDot color={P.teal} label="Pointer disk (ctid)" />
-        <span className="ml-auto font-mono text-[12px] text-ink-3">nbtree · B+Tree berantai</span>
+        <LegendDot color={P.warnFill} label="Sibling right-link aktif" />
+        <LegendDot color={P.teal} label="Heap Tuple ID (ctid)" />
+        <span className="ml-auto font-mono text-[12px] text-ink-3">nbtree · Lehman–Yao B-link tree</span>
       </div>
 
       <div className="overflow-x-auto">
@@ -143,7 +143,7 @@ export const BTreeCanvas: React.FC<BTreeCanvasProps> = ({ root, currentStep, isM
           viewBox={`0 0 ${layout.canvasWidth} ${layout.canvasHeight}`}
           className="mx-auto block select-none"
           role="img"
-          aria-label="Visualisasi struktur B+Tree"
+          aria-label="Visualisasi struktur Lehman–Yao B-link tree (PostgreSQL nbtree)"
         >
           <defs>
             <linearGradient id="grad-root-bar" x1="0" y1="0" x2="1" y2="0">

@@ -164,9 +164,14 @@ export const GinSimulator: React.FC = () => {
         </Card>
       </div>
 
-      <Note tone="accent" icon={Info}>
-        {res.steps[res.steps.length - 1]?.explanation ??
-          'Pilih minimal satu token untuk melihat bagaimana GIN menggabungkan posting list.'}
+      <Note tone="accent" icon={Info} title="Prinsip Inverted Index &amp; Posting List pada GIN">
+        <p>
+          {res.steps[res.steps.length - 1]?.explanation ??
+            'Pilih minimal satu token untuk melihat bagaimana GIN menggabungkan posting list.'}
+        </p>
+        <p className="mt-2 border-t border-line-soft/60 pt-2 text-[12.5px] text-ink-2">
+          <strong>Bagaimana GIN Bekerja di PostgreSQL:</strong> GIN (Generalized Inverted Index) memecah nilai majemuk (Array, JSONB, atau tsvector dokumen) menjadi nilai komponen individual (token). Setiap token unik hanya disimpan satu kali di dalam <em>Entry Tree</em> (B-Tree internal) dan menunjuk ke <em>Posting List</em> (daftar heap tuple identifier ctid). Bila query mencari kombinasi token dengan operator <code className="font-mono text-[11.5px] bg-surface px-1 py-0.5 rounded">@&gt;</code> (AND), PostgreSQL melakukan operasi irisan (<em>bitmap intersection</em>); bila <code className="font-mono text-[11.5px] bg-surface px-1 py-0.5 rounded">&amp;&amp;</code> (OR), dilakukan penggabungan (<em>bitmap union</em>).
+        </p>
       </Note>
     </div>
   );

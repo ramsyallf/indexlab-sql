@@ -32,7 +32,7 @@ export interface IndexMethodSpec {
   advantages: string[];
   limitations: string[];
   storageProfile: {
-    relativeSize: 'Sangat Kecil' | 'Kecil' | 'Sedang' | 'Besar';
+    relativeSize: string; // conceptual estimate e.g. 'Sedang (Estimasi konseptual)'
     sizeScore: number; // 1-100 conceptual
     buildCostScore: number; // 1-100 conceptual
     writeOverheadScore: number; // 1-100 conceptual

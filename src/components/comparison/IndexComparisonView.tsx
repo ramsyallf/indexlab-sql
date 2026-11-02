@@ -121,7 +121,7 @@ export const IndexComparisonView: React.FC = () => {
                 </h3>
               </div>
               <Tag tone="neutral">
-                Ukuran: {spec.storageProfile.relativeSize}
+                Profil: {spec.storageProfile.relativeSize}
               </Tag>
             </div>
 
@@ -148,12 +148,12 @@ export const IndexComparisonView: React.FC = () => {
             <div className="space-y-3 rounded-2xl bg-fill p-4">
               <div className="flex items-center gap-1.5 text-[13px] font-semibold text-ink">
                 <HardDrive className="h-4 w-4 text-accent" />
-                Profil Penyimpanan &amp; Overhead Tulis
+                Profil Penyimpanan &amp; Overhead Tulis (Estimasi Konseptual)
               </div>
 
               <div>
                 <div className="flex justify-between text-[12px] text-ink-2">
-                  <span>Kebutuhan Ruang Disk</span>
+                  <span>Estimasi Kebutuhan Ruang Disk (Relatif)</span>
                   <span className="font-mono text-ink font-medium">{spec.storageProfile.relativeSize}</span>
                 </div>
                 <div className="mt-1.5 h-2.5 w-full overflow-hidden rounded-full bg-slate-200">
@@ -265,8 +265,13 @@ export const IndexComparisonView: React.FC = () => {
         </div>
       </Card>
 
-      <Note tone="neutral" icon={Info} title="Prinsip Pemilihan Index">
-        Tidak ada satu jenis index yang selalu lebih cepat untuk semua situasi. Pemilihan index selalu merupakan pertimbangan trade-off antara pola klausa WHERE / ORDER BY, selektivitas baris, korelasi urutan fisik di disk, ukuran ruang penyimpanan, dan frekuensi operasi tulis (INSERT, UPDATE, DELETE).
+      <Note tone="neutral" icon={Info} title="Prinsip Pemilihan Index & Catatan Ukuran Storage">
+        <p>
+          Tidak ada satu jenis index yang selalu lebih cepat untuk semua situasi. Pemilihan index selalu merupakan pertimbangan trade-off antara pola klausa WHERE / ORDER BY, selektivitas baris, korelasi urutan fisik di disk, ukuran ruang penyimpanan, dan frekuensi operasi tulis (INSERT, UPDATE, DELETE).
+        </p>
+        <p className="mt-2 text-[12.5px] text-ink-2">
+          <strong>Penting tentang Ukuran Index:</strong> Ukuran index bukan merupakan sifat mutlak dari suatu metode index, melainkan estimasi konseptual edukatif. Ukuran riil di PostgreSQL dipengaruhi oleh tipe data kolom, panjang key, kardinalitas nilai unik, pengaturan <code className="font-mono text-[11.5px]">fillfactor</code>, dan overhead per halaman blok 8KB.
+        </p>
       </Note>
     </div>
   );
