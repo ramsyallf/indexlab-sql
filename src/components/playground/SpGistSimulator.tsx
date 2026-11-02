@@ -152,27 +152,25 @@ export const SpGistSimulator: React.FC = () => {
           </form>
         </Card>
 
-        {/* Partition Log & GiST vs SP-GiST comparison */}
-        <div className="flex flex-col gap-5 lg:col-span-5">
-          <Card className="flex-1 p-5 sm:p-6">
-            <h3 className="text-[17px] font-semibold tracking-tight text-ink">
-              Jalur Partisi ({searchRes.steps.length} Langkah)
-            </h3>
-            <ol className="mt-4 max-h-[300px] space-y-3 overflow-y-auto pr-1">
-              {searchRes.steps.map((s) => (
-                <li key={s.stepIndex} className="flex gap-3 text-[14px] leading-relaxed text-ink-2">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-fill text-[12px] font-semibold text-ink">
-                    {s.stepIndex}
-                  </span>
-                  <div>
-                    <strong className="text-ink">{s.title}</strong>
-                    <p className="mt-0.5 text-[13px]">{s.explanation}</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          </Card>
-        </div>
+        {/* Partition Log */}
+        <Card className="flex flex-col p-5 sm:p-6 lg:col-span-5">
+          <h3 className="text-[17px] font-semibold tracking-tight text-ink">
+            Jalur Partisi ({searchRes.steps.length} Langkah)
+          </h3>
+          <ol className="mt-4 flex-1 min-h-0 space-y-3 overflow-y-auto pr-1">
+            {searchRes.steps.map((s) => (
+              <li key={s.stepIndex} className="flex gap-3 text-[14px] leading-relaxed text-ink-2">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-fill text-[12px] font-semibold text-ink">
+                  {s.stepIndex}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <strong className="text-ink">{s.title}</strong>
+                  <p className="mt-0.5 text-[13px]">{s.explanation}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </Card>
       </div>
     </div>
   );

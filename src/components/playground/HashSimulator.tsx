@@ -72,7 +72,7 @@ export const HashSimulator: React.FC = () => {
               setRangeTried(false);
             }}
             options={[
-              { value: 'search', label: 'Cari =' },
+              { value: 'search', label: 'Cari' },
               { value: 'insert', label: 'Insert' },
               { value: 'range', label: 'Uji range' },
             ]}
