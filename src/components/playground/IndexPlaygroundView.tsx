@@ -163,7 +163,7 @@ export const IndexPlaygroundView: React.FC<Props> = ({ selectedIndex: propSelect
                 <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200/80">
                   <Check className="h-3 w-3 stroke-[2.5]" aria-hidden />
                 </span>
-                <span>{q}</span>
+                <span className="text-justify">{q}</span>
               </li>
             ))}
           </ul>
@@ -177,12 +177,12 @@ export const IndexPlaygroundView: React.FC<Props> = ({ selectedIndex: propSelect
             <h3 className="text-[17px] font-bold tracking-tight text-ink">Kapan sebaiknya dihindari</h3>
           </div>
           <ul className="mt-4 space-y-3">
-            {[...spec.notSuitableFor, ...spec.limitations].map((q) => (
+            {spec.notSuitableFor.map((q) => (
               <li key={q} className="flex items-start gap-3 text-[14.5px] leading-relaxed text-ink-2">
                 <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-rose-50 text-rose-600 border border-rose-200/80">
                   <X className="h-3 w-3 stroke-[2.5]" aria-hidden />
                 </span>
-                <span>{q}</span>
+                <span className="text-justify">{q}</span>
               </li>
             ))}
           </ul>
