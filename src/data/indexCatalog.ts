@@ -8,7 +8,7 @@ export const INDEX_METHODS: Record<IndexTypeId, IndexMethodSpec> = {
     badge: 'Equality · Range · Sort',
     tagline: 'Balanced Search Tree (nbtree) untuk pencarian ekuivalensi, rentang nilai, dan pengurutan.',
     summary:
-      'PostgreSQL uses B-tree as its default index method. Its internal implementation is based on the Lehman–Yao high-concurrency B-tree approach, commonly described as a B-link tree. Leaf nodes dan internal nodes terhubung secara horizontal melalui right-link pointer (sibling link) untuk memastikan operasi baca (concurrent readers) tetap konsisten tanpa mengunci (lock) node induk saat terjadi split halaman. Visualisasi pada simulator ini adalah model konseptual edukatif untuk memahami algoritma traversal dan split, bukan representasi tata letak biner internal C struct PostgreSQL.',
+      'PostgreSQL menggunakan B-Tree sebagai metode index default. Implementasi internalnya berbasis pendekatan B-link tree (algoritma Lehman–Yao) dengan konkurensi tinggi, di mana leaf node terhubung secara horizontal melalui pointer right-link (sibling link) agar operasi pembacaan data tetap konsisten tanpa mengunci node induk saat terjadi pembagian halaman.',
     dataStructureName: 'B-link Tree (Lehman & Yao High-Concurrency B-tree)',
     howItWorks:
       'Internal node menyimpan separator key beserta "high key" dan right-link (sibling pointer) horizontal ke halaman tetangga kanan. Seluruh pasangan (key, ctid) tersimpan secara terurut di Leaf Nodes yang juga saling terhubung secara horizontal. Catatan teknis: ctid (ItemPointer) adalah heap tuple identifier (nomor blok, nomor offset), bukan alamat disk permanen; nilainya berubah saat baris di-UPDATE atau di-VACUUM (MVCC).',
@@ -22,8 +22,8 @@ export const INDEX_METHODS: Record<IndexTypeId, IndexMethodSpec> = {
       'Pencarian keberadaan baris (WHERE film_id IN (20, 45, 70))',
     ],
     notSuitableFor: [
-      "Catatan LIKE 'prefix%': Index support for prefix matching depends on database collation and operator class. In some configurations, a pattern operator class such as text_pattern_ops is required (misal: CREATE INDEX ON film (title text_pattern_ops)).",
-      "Substring searches such as LIKE '%abc%' generally require a different indexing strategy, such as GIN dengan pg_trgm (trigram extension).",
+      "Catatan LIKE 'prefix%': Dukungan index untuk pencarian awalan teks bergantung pada collation database dan operator class. Pada konfigurasi tertentu, diperlukan operator class pola seperti text_pattern_ops (misal: CREATE INDEX ON film (title text_pattern_ops)).",
+      "Pencarian substring seperti LIKE '%abc%' umumnya memerlukan strategi index yang berbeda, seperti GIN dengan ekstensi pg_trgm (trigram).",
       'Data array/JSONB dengan banyak elemen per baris (lebih cocok GIN)',
       'Data geometri/spasial 2D atau overlap poligon (lebih cocok GiST/SP-GiST)',
     ],
