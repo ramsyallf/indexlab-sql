@@ -60,7 +60,7 @@ export const SqlExplorerView: React.FC = () => {
                 <h3 className="mt-4 text-[18px] font-semibold tracking-tight text-ink">
                   {item.title}
                 </h3>
-                <p className="mt-1 text-[14px] leading-relaxed text-ink-2">
+                <p className="mt-1 text-[14px] leading-relaxed text-ink-2 text-justify">
                   {item.description}
                 </p>
 
@@ -72,7 +72,7 @@ export const SqlExplorerView: React.FC = () => {
               <div className="mt-4 border-t border-line-soft pt-3 text-[13px] text-ink-2">
                 <div className="flex items-start gap-2">
                   <Terminal className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" />
-                  <div>
+                  <div className="text-justify">
                     <strong className="text-ink">Rencana Eksekusi: </strong>
                     {item.expectedPlanNote}
                   </div>

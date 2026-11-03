@@ -14,7 +14,6 @@ import {
   CheckCircle2,
   Database,
   Gauge,
-  Info,
   Terminal,
 } from 'lucide-react';
 import { INDEX_METHODS, PERF_LAB_SCENARIOS } from '../../data/indexCatalog';
@@ -91,12 +90,6 @@ export const PerformanceLabView: React.FC = () => {
       <PageHeader
         title="Query Performance Lab"
         subtitle="Simulasi komparatif rencana eksekusi konseptual (EXPLAIN ANALYZE), estimasi baris & blok dipindai, dan estimasi waktu proses antara Sequential Scan dan Index Scan."
-        accessory={
-          <Tag tone="warn" className="gap-1">
-            <Info className="h-3 w-3" />
-            Simulasi Edukatif Konseptual
-          </Tag>
-        }
       />
 
       {/* Scenario & Configuration Card */}
@@ -115,7 +108,7 @@ export const PerformanceLabView: React.FC = () => {
               />
             </Field>
 
-            <p className="text-[14px] leading-relaxed text-ink-2">
+            <p className="text-[14px] leading-relaxed text-ink-2 text-justify">
               {scenario.description}
             </p>
 
@@ -184,7 +177,7 @@ export const PerformanceLabView: React.FC = () => {
               </Field>
             </div>
 
-            <p className="text-[13px] leading-relaxed text-ink-2">
+            <p className="text-[13px] leading-relaxed text-ink-2 text-justify">
               {scenario.explanationId}
             </p>
           </div>
@@ -214,7 +207,7 @@ export const PerformanceLabView: React.FC = () => {
               {/* Metrics */}
               <div className="mt-4 grid grid-cols-2 gap-2">
                 <Stat
-                  label="Waktu (Estimasi Konseptual)"
+                  label="Estimasi Waktu"
                   value={`${p.data.simulatedTimeMs} ms`}
                   tone={idx === 0 ? 'bad' : 'ok'}
                 />
@@ -228,21 +221,16 @@ export const PerformanceLabView: React.FC = () => {
                   value={p.data.rowsReturned.toLocaleString('id-ID')}
                 />
                 <Stat
-                  label="Ukuran Index (Estimasi)"
+                  label="Ukuran Index"
                   value={`${p.data.indexSizeKb.toLocaleString('id-ID')} KB`}
                 />
               </div>
 
               {/* EXPLAIN Output */}
               <div className="mt-4 rounded-2xl bg-fill p-3.5">
-                <div className="mb-2 flex flex-wrap items-center justify-between gap-1 font-mono text-[11px] text-ink-2">
-                  <div className="flex items-center gap-1.5 font-semibold">
-                    <Terminal className="h-3.5 w-3.5 text-accent" />
-                    Simulasi Output EXPLAIN ANALYZE
-                  </div>
-                  <span className="rounded bg-slate-200/90 px-1.5 py-0.5 text-[10px] font-sans font-medium text-ink-2">
-                    Simulasi — bukan hasil eksekusi PostgreSQL
-                  </span>
+                <div className="mb-2 flex items-center gap-1.5 font-mono text-[11px] font-semibold text-ink-2">
+                  <Terminal className="h-3.5 w-3.5 text-accent" />
+                  Output EXPLAIN ANALYZE
                 </div>
                 <pre className="overflow-x-auto whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-ink-2">
                   {p.data.explainAnalyzeText.join('\n')}
@@ -250,7 +238,7 @@ export const PerformanceLabView: React.FC = () => {
               </div>
             </div>
 
-            <p className="mt-4 border-t border-line-soft pt-3 text-[12px] leading-relaxed text-ink-2">
+            <p className="mt-4 border-t border-line-soft pt-3 text-[12px] leading-relaxed text-ink-2 text-justify">
               {p.data.notes}
             </p>
           </Card>
@@ -267,9 +255,6 @@ export const PerformanceLabView: React.FC = () => {
                 Jumlah Baris yang Dipindai (Rows Scanned)
               </h3>
             </div>
-            <Tag tone="neutral" className="text-[11px]">
-              Simulasi — bukan hasil eksekusi PostgreSQL
-            </Tag>
           </div>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -304,12 +289,9 @@ export const PerformanceLabView: React.FC = () => {
             <div className="flex items-center gap-2">
               <Gauge className="h-4 w-4 text-ok" />
               <h3 className="text-[17px] font-semibold tracking-tight text-ink">
-                Waktu Simulasi (Konseptual ms) vs Estimasi Ukuran Index (KB)
+                Estimasi Waktu Eksekusi (ms) vs Ukuran Index (KB)
               </h3>
             </div>
-            <Tag tone="neutral" className="text-[11px]">
-              Simulasi — bukan hasil eksekusi PostgreSQL
-            </Tag>
           </div>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">

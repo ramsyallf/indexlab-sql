@@ -9,11 +9,35 @@ import {
 import { Button, Card, cx, Field, inputCls, Select, Tag } from '../ui/primitives';
 import { BloomVisualCanvas } from './BloomVisualCanvas';
 
+const FALSE_POSITIVE_SCENARIOS = [
+  {
+    filter: { customerId: '12', staffId: '2', rating: 'R' },
+    craftedTuple: { rowId: 91, ctid: '(9,1)', customerId: 3, staffId: 2, rating: 'R' },
+  },
+  {
+    filter: { customerId: '18', staffId: '2', rating: 'PG' },
+    craftedTuple: { rowId: 92, ctid: '(9,2)', customerId: 1, staffId: 2, rating: 'PG' },
+  },
+  {
+    filter: { customerId: '25', staffId: '1', rating: 'NC-17' },
+    craftedTuple: { rowId: 93, ctid: '(9,3)', customerId: 1, staffId: 1, rating: 'G' },
+  },
+  {
+    filter: { customerId: '31', staffId: '1', rating: 'R' },
+    craftedTuple: { rowId: 94, ctid: '(9,4)', customerId: 6, staffId: 1, rating: 'PG' },
+  },
+  {
+    filter: { customerId: '40', staffId: '2', rating: 'PG-13' },
+    craftedTuple: { rowId: 95, ctid: '(9,5)', customerId: 1, staffId: 2, rating: 'PG-13' },
+  },
+];
+
 export const BloomSimulator: React.FC = () => {
   const [rows, setRows] = useState<BloomRowTuple[]>(PRESET_BLOOM_ROWS);
   const [filterCustomerId, setFilterCustomerId] = useState<string>('');
   const [filterStaffId, setFilterStaffId] = useState<string>('2');
   const [filterRating, setFilterRating] = useState<string>('R');
+  const [fpIndex, setFpIndex] = useState<number>(0);
 
   const [newCustomer, setNewCustomer] = useState<string>('19');
   const [newStaff, setNewStaff] = useState<string>('2');
@@ -41,20 +65,32 @@ export const BloomSimulator: React.FC = () => {
   };
 
   const triggerFalsePositiveDemo = () => {
-    const crafted = createBloomRowTuple(99, '(9,1)', 12, 1, 'R');
-    const exists = rows.some((r) => r.rowId === 99);
-    const nextRows = exists ? rows : [...rows, crafted];
-    setRows(nextRows);
-    setFilterCustomerId('12');
-    setFilterStaffId('2');
-    setFilterRating('R');
+    const scenario = FALSE_POSITIVE_SCENARIOS[fpIndex % FALSE_POSITIVE_SCENARIOS.length];
+    setFpIndex((prev) => prev + 1);
+
+    const crafted = createBloomRowTuple(
+      scenario.craftedTuple.rowId,
+      scenario.craftedTuple.ctid,
+      scenario.craftedTuple.customerId,
+      scenario.craftedTuple.staffId,
+      scenario.craftedTuple.rating
+    );
+
+    // Filter out prior demo tuples (id >= 90) and add the new one
+    const baseRows = rows.filter((r) => r.rowId < 90);
+    setRows([...baseRows, crafted]);
+
+    setFilterCustomerId(scenario.filter.customerId);
+    setFilterStaffId(scenario.filter.staffId);
+    setFilterRating(scenario.filter.rating);
   };
 
   const reset = () => {
     setRows(PRESET_BLOOM_ROWS);
     setFilterCustomerId('');
-    setFilterStaffId('2');
-    setFilterRating('R');
+    setFilterStaffId('');
+    setFilterRating('');
+    setFpIndex(0);
   };
 
   return (

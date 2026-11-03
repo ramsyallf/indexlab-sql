@@ -130,14 +130,14 @@ export const IndexComparisonView: React.FC = () => {
                 <dd className="mt-1 font-mono text-[13px] font-semibold text-ink">
                   {spec.dataStructureName}
                 </dd>
-                <dd className="mt-1 text-[14px] leading-relaxed text-ink-2">
+                <dd className="mt-1 text-[14px] leading-relaxed text-ink-2 text-justify">
                   {spec.howItWorks}
                 </dd>
               </div>
 
               <div>
                 <dt className="text-[13px] font-medium text-ink-2">Mekanisme Pencarian</dt>
-                <dd className="mt-1 text-[14px] leading-relaxed text-ink-2">
+                <dd className="mt-1 text-[14px] leading-relaxed text-ink-2 text-justify">
                   {spec.searchMechanism}
                 </dd>
               </div>
@@ -147,7 +147,7 @@ export const IndexComparisonView: React.FC = () => {
             <div className="space-y-3 rounded-2xl bg-fill p-4">
               <div className="flex items-center gap-1.5 text-[13px] font-semibold text-ink">
                 <HardDrive className="h-4 w-4 text-accent" />
-                Profil Penyimpanan &amp; Overhead Tulis (Estimasi Konseptual)
+                Profil Penyimpanan &amp; Overhead Tulis
               </div>
 
               <div>
@@ -176,7 +176,7 @@ export const IndexComparisonView: React.FC = () => {
                 </div>
               </div>
 
-              <p className="pt-1 text-[12px] text-ink-2 leading-relaxed">
+              <p className="pt-1 text-[12px] text-ink-2 leading-relaxed text-justify">
                 {spec.storageProfile.description}
               </p>
             </div>
@@ -191,7 +191,7 @@ export const IndexComparisonView: React.FC = () => {
                   {spec.advantages.map((adv, i) => (
                     <li key={i} className="flex items-start gap-2">
                       <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ok" />
-                      <span>{adv}</span>
+                      <span className="text-justify">{adv}</span>
                     </li>
                   ))}
                 </ul>
@@ -205,7 +205,7 @@ export const IndexComparisonView: React.FC = () => {
                   {spec.limitations.map((lim, i) => (
                     <li key={i} className="flex items-start gap-2">
                       <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-bad-fill" />
-                      <span>{lim}</span>
+                      <span className="text-justify">{lim}</span>
                     </li>
                   ))}
                 </ul>

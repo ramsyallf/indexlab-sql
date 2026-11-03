@@ -38,7 +38,7 @@ export const INDEX_METHODS: Record<IndexTypeId, IndexMethodSpec> = {
       'Overhead penulisan (INSERT/UPDATE) ketika terjadi Page Split pada leaf/internal yang penuh',
     ],
     storageProfile: {
-      relativeSize: 'Sedang (Estimasi konseptual)',
+      relativeSize: 'Sedang',
       sizeScore: 60,
       buildCostScore: 55,
       writeOverheadScore: 55,
@@ -89,7 +89,7 @@ export const INDEX_METHODS: Record<IndexTypeId, IndexMethodSpec> = {
       'Ukuran index lebih besar dibandingkan single-column B-Tree karena menyimpan multi-field',
     ],
     storageProfile: {
-      relativeSize: 'Besar (Estimasi konseptual)',
+      relativeSize: 'Besar',
       sizeScore: 72,
       buildCostScore: 65,
       writeOverheadScore: 65,
@@ -140,7 +140,7 @@ export const INDEX_METHODS: Record<IndexTypeId, IndexMethodSpec> = {
       'Tidak mendukung multicolumn index maupun unique constraint di PostgreSQL',
     ],
     storageProfile: {
-      relativeSize: 'Kecil / Ringkas (Estimasi konseptual)',
+      relativeSize: 'Kecil / Ringkas',
       sizeScore: 45,
       buildCostScore: 45,
       writeOverheadScore: 50,
@@ -191,7 +191,7 @@ export const INDEX_METHODS: Record<IndexTypeId, IndexMethodSpec> = {
       'Ukuran index dapat menjadi sangat besar pada dokumen dengan kosakata sangat beragam',
     ],
     storageProfile: {
-      relativeSize: 'Besar (Estimasi konseptual)',
+      relativeSize: 'Besar',
       sizeScore: 80,
       buildCostScore: 85,
       writeOverheadScore: 85,
@@ -240,7 +240,7 @@ export const INDEX_METHODS: Record<IndexTypeId, IndexMethodSpec> = {
       'Waktu pencarian dan ukuran index lebih besar dibandingkan B-Tree untuk data skalar 1 dimensi',
     ],
     storageProfile: {
-      relativeSize: 'Sedang - Besar (Estimasi konseptual)',
+      relativeSize: 'Sedang - Besar',
       sizeScore: 75,
       buildCostScore: 70,
       writeOverheadScore: 70,
@@ -289,7 +289,7 @@ export const INDEX_METHODS: Record<IndexTypeId, IndexMethodSpec> = {
       'Sangat bergantung pada korelasi urutan fisik data di disk (Physical Correlation)',
     ],
     storageProfile: {
-      relativeSize: 'Sangat Kecil (~0.1% tabel, Estimasi konseptual)',
+      relativeSize: 'Sangat Kecil (~0.1% tabel)',
       sizeScore: 8,
       buildCostScore: 15,
       writeOverheadScore: 10,
@@ -337,7 +337,7 @@ export const INDEX_METHODS: Record<IndexTypeId, IndexMethodSpec> = {
       'Kurang cocok untuk objek berdimensi poligon luas yang memotong batas kuadran',
     ],
     storageProfile: {
-      relativeSize: 'Sedang (Estimasi konseptual)',
+      relativeSize: 'Sedang',
       sizeScore: 55,
       buildCostScore: 60,
       writeOverheadScore: 55,
@@ -387,7 +387,7 @@ export const INDEX_METHODS: Record<IndexTypeId, IndexMethodSpec> = {
       'Hanya mendukung operator equality (=) dan memerlukan ekstensi contrib tambahan (`bloom`)',
     ],
     storageProfile: {
-      relativeSize: 'Kecil / Kompak (Estimasi konseptual)',
+      relativeSize: 'Kecil / Kompak',
       sizeScore: 30,
       buildCostScore: 40,
       writeOverheadScore: 35,

@@ -93,7 +93,7 @@ export const IndexPlaygroundView: React.FC<Props> = ({ selectedIndex: propSelect
             <h2 className="mt-3 sm:mt-4 font-display text-[26px] sm:text-[34px] lg:text-[36px] font-extrabold leading-[1.15] tracking-tight text-white">
               {spec.name}
             </h2>
-            <p className="mt-2.5 sm:mt-3 max-w-[62ch] text-[14.5px] sm:text-[15.5px] leading-relaxed text-blue-50/90">
+            <p className="mt-2.5 sm:mt-3 max-w-[62ch] text-[14.5px] sm:text-[15.5px] leading-relaxed text-blue-50/90 text-justify">
               {spec.summary}
             </p>
 
@@ -130,9 +130,8 @@ export const IndexPlaygroundView: React.FC<Props> = ({ selectedIndex: propSelect
             <CodeBlock code={spec.defaultSqlExample} className="bg-slate-950/90 border border-slate-800 text-slate-100" />
             <div className="mt-3 flex items-center justify-between text-[11.5px] text-slate-300">
               <span>
-                Ukuran: <strong className="text-cyan-300 font-semibold">{spec.storageProfile.relativeSize}</strong>
+                Ukuran Relatif: <strong className="text-cyan-300 font-semibold">{spec.storageProfile.relativeSize}</strong>
               </span>
-              <span className="text-slate-400">Estimasi konseptual edukatif</span>
             </div>
           </div>
         </div>
