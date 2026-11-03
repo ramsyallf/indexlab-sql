@@ -1,4 +1,4 @@
-import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
 import { Navbar } from './components/layout/Navbar';
 import { IndexPlaygroundView } from './components/playground/IndexPlaygroundView';
@@ -53,12 +53,18 @@ function AnimatedAppRoutes() {
   );
 }
 
+// Auto-migrate legacy hash URLs (e.g. /#/playground/btree -> /playground/btree)
+if (typeof window !== 'undefined' && window.location.hash.startsWith('#/')) {
+  const cleanPath = window.location.hash.slice(1);
+  window.history.replaceState(null, '', cleanPath);
+}
+
 export function App() {
   return (
     <MotionConfig reducedMotion="user">
-      <HashRouter>
+      <BrowserRouter>
         <AnimatedAppRoutes />
-      </HashRouter>
+      </BrowserRouter>
     </MotionConfig>
   );
 }
