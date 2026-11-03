@@ -22,6 +22,15 @@ import { IndexTypeId } from '../../types';
 import { Card, Field, PageHeader, Select, Stat, Tag } from '../ui/primitives';
 import { P } from '../../ui/theme';
 
+const MIN_ROWS = 5000;
+const MAX_ROWS = 500000;
+const ROW_TICKS = [
+  { value: 5000, label: '5k' },
+  { value: 100000, label: '100k' },
+  { value: 250000, label: '250k' },
+  { value: 500000, label: '500k' },
+];
+
 export const PerformanceLabView: React.FC = () => {
   const [selectedScenarioId, setSelectedScenarioId] = useState<string>(
     PERF_LAB_SCENARIOS[0].id
@@ -136,20 +145,68 @@ export const PerformanceLabView: React.FC = () => {
                   ~{Math.ceil(totalRows / 40).toLocaleString('id-ID')} Blok Disk (8KB)
                 </span>
               </div>
-              <input
-                type="range"
-                min={5000}
-                max={500000}
-                step={5000}
-                value={totalRows}
-                onChange={(e) => setTotalRows(Number(e.target.value))}
-                className="w-full"
-              />
-              <div className="mt-1 flex justify-between font-mono text-[11px] text-ink-3">
-                <span>5k</span>
-                <span>100k</span>
-                <span>250k</span>
-                <span>500k</span>
+              <div className="relative">
+                <input
+                  type="range"
+                  list="perf-row-milestones"
+                  min={MIN_ROWS}
+                  max={MAX_ROWS}
+                  step={5000}
+                  value={totalRows}
+                  onChange={(e) => setTotalRows(Number(e.target.value))}
+                  className="w-full cursor-pointer"
+                />
+                <datalist id="perf-row-milestones">
+                  {ROW_TICKS.map((t) => (
+                    <option key={t.value} value={t.value} />
+                  ))}
+                </datalist>
+
+                {/* Accurately positioned tick marks and clickable labels */}
+                <div className="relative mt-1 h-6 w-full select-none font-mono text-[11px]">
+                  {ROW_TICKS.map((tick, idx) => {
+                    const ratio = (tick.value - MIN_ROWS) / (MAX_ROWS - MIN_ROWS);
+                    const isActive = totalRows === tick.value;
+                    const isFirst = idx === 0;
+                    const isLast = idx === ROW_TICKS.length - 1;
+
+                    // Exact thumb center in standard range slider:
+                    // Thumb center moves from 8px at 0% to (width - 8px) at 100%
+                    const leftPos = `calc(8px + ${ratio} * (100% - 16px))`;
+                    const transform = isFirst
+                      ? 'translateX(-15%)'
+                      : isLast
+                      ? 'translateX(-85%)'
+                      : 'translateX(-50%)';
+
+                    return (
+                      <button
+                        type="button"
+                        key={tick.value}
+                        onClick={() => setTotalRows(tick.value)}
+                        style={{
+                          left: leftPos,
+                          transform,
+                        }}
+                        className={`absolute top-0 flex flex-col items-center transition-colors cursor-pointer group ${
+                          isActive
+                            ? 'font-bold text-accent'
+                            : 'text-ink-3 hover:text-ink'
+                        }`}
+                        title={`Pilih ${tick.value.toLocaleString('id-ID')} baris`}
+                      >
+                        <span
+                          className={`h-1.5 w-[1.5px] rounded-full transition-colors ${
+                            isActive
+                              ? 'bg-accent'
+                              : 'bg-slate-300 group-hover:bg-accent/60'
+                          }`}
+                        />
+                        <span className="mt-0.5">{tick.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
