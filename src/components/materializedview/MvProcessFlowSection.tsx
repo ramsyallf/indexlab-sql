@@ -86,7 +86,7 @@ const STAGES: StageInfo[] = [
   {
     id: 6,
     category: 'source',
-    title: 'Data Sumber Berubah, MV Tetap pada Snapshot Lama',
+    title: 'Data Sumber Berubah, Materialized View Tetap pada Snapshot Lama',
     icon: AlertCircle,
     summary: 'Transaksi baru masuk ke tabel sumber, tetapi Materialized View tidak otomatis terupdate.',
     explanation:

@@ -198,7 +198,7 @@ export const MvSimulatorSection: React.FC = () => {
         <div>
           <SectionTitle>Simulasi Interaktif Materialized View</SectionTitle>
           <p className="mt-1 text-[14px] text-ink-2 text-justify">
-            Buktikan secara langsung: Saat tabel sumber dimodifikasi, Materialized View <strong>tidak berubah otomatis</strong> hingga Anda menekan tombol Refresh!
+            Saat tabel sumber dimodifikasi, Materialized View <strong>tidak berubah otomatis</strong> hingga Anda menekan tombol Refresh!
           </p>
         </div>
 

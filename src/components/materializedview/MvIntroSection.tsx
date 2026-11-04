@@ -95,8 +95,8 @@ export const MvIntroSection: React.FC = () => {
               type="button"
               onClick={() => setActiveTab('mv')}
               className={`px-4 py-1.5 rounded-full text-[13px] font-semibold transition-all ${activeTab === 'mv'
-                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm'
-                  : 'text-ink-2 hover:text-ink'
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm'
+                : 'text-ink-2 hover:text-ink'
                 }`}
             >
               Materialized View
@@ -105,8 +105,8 @@ export const MvIntroSection: React.FC = () => {
               type="button"
               onClick={() => setActiveTab('regular')}
               className={`px-4 py-1.5 rounded-full text-[13px] font-semibold transition-all ${activeTab === 'regular'
-                  ? 'bg-slate-700 text-white shadow-sm'
-                  : 'text-ink-2 hover:text-ink'
+                ? 'bg-slate-700 text-white shadow-sm'
+                : 'text-ink-2 hover:text-ink'
                 }`}
             >
               Regular View
@@ -170,7 +170,7 @@ export const MvIntroSection: React.FC = () => {
               <div className="rounded-xl bg-blue-50/70 border border-blue-200/80 p-3.5 flex items-start gap-3 text-[13px] text-blue-900">
                 <Sparkles className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
                 <div className="text-justify">
-                  <strong>Kunci Konseptual:</strong> Materialized View adalah jalan tengah yang disengaja antara <em>Storage</em> (menggunakan kapasitas disk tambahan) dan <em>Speed</em> (menghilangkan latensi kalkulasi berulang).
+                  <strong>Kapan Materialized View Lebih Baik?</strong> Materialized View adalah jalan tengah yang disengaja antara <em>Storage</em> (menggunakan kapasitas disk tambahan) dan <em>Speed</em> (menghilangkan latensi kalkulasi berulang).
                 </div>
               </div>
             </div>
