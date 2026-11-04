@@ -18,69 +18,6 @@ export const MvIntroSection: React.FC = () => {
 
   return (
     <section className="space-y-6">
-      {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-5 flex flex-col justify-between hover:shadow-md transition-shadow">
-          <div>
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 border border-blue-200">
-              <HardDrive className="h-5 w-5" />
-            </span>
-            <h4 className="mt-3.5 text-[16px] font-bold text-ink">Penyimpanan Fisik</h4>
-            <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink-2 text-justify">
-              Hasil query dieksekusi dan disimpan langsung sebagai tabel snapshot di storage disk, bukan sekadar formula query virtual.
-            </p>
-          </div>
-          <div className="mt-4 pt-3 border-t border-line-soft text-[12px] font-medium text-ink-3">
-            Beban komputasi dipindahkan ke saat refresh.
-          </div>
-        </Card>
-
-        <Card className="p-5 flex flex-col justify-between hover:shadow-md transition-shadow">
-          <div>
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200">
-              <Zap className="h-5 w-5" />
-            </span>
-            <h4 className="mt-3.5 text-[16px] font-bold text-ink">Baca Cepat</h4>
-            <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink-2 text-justify">
-              Query pembacaan berulang tidak perlu mengkalkulasi ulang operasi agregasi atau join yang memakan waktu lama.
-            </p>
-          </div>
-          <div className="mt-4 pt-3 border-t border-line-soft text-[12px] font-medium text-ink-3">
-            Sangat cocok untuk dashboard dan reporting harian.
-          </div>
-        </Card>
-
-        <Card className="p-5 flex flex-col justify-between hover:shadow-md transition-shadow">
-          <div>
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600 border border-amber-200">
-              <Clock className="h-5 w-5" />
-            </span>
-            <h4 className="mt-3.5 text-[16px] font-bold text-ink">Tidak Otomatis Update</h4>
-            <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink-2 text-justify">
-              Perubahan pada tabel sumber tidak langsung terupdate di Materialized View hingga perintah refresh dijalankan.
-            </p>
-          </div>
-          <div className="mt-4 pt-3 border-t border-line-soft text-[12px] font-medium text-ink-3">
-            Konsekuensi data dapat menjadi sedikit usang.
-          </div>
-        </Card>
-
-        <Card className="p-5 flex flex-col justify-between hover:shadow-md transition-shadow">
-          <div>
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-200">
-              <Sparkles className="h-5 w-5" />
-            </span>
-            <h4 className="mt-3.5 text-[16px] font-bold text-ink">Mendukung Index</h4>
-            <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink-2 text-justify">
-              Karena tersimpan fisik di disk, Anda dapat membuat B-Tree atau Hash index pada kolom-kolom Materialized View.
-            </p>
-          </div>
-          <div className="mt-4 pt-3 border-t border-line-soft text-[12px] font-medium text-ink-3">
-            Meningkatkan kecepatan filter dan pencarian.
-          </div>
-        </Card>
-      </div>
-
       {/* Conceptual Diagram & Interactive Comparison */}
       <Card className="p-5 sm:p-7">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-line-soft">
