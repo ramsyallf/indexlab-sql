@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Code2, Cpu, Database, Gauge, Scale, type LucideIcon } from 'lucide-react';
+import { Code2, Cpu, Database, DatabaseZap, Gauge, Scale, type LucideIcon } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { cx } from '../ui/primitives';
 
@@ -16,6 +16,7 @@ const MENU: NavItem[] = [
   { id: 'comparison', path: '/comparison', label: 'Bandingkan', icon: Scale },
   { id: 'perflab', path: '/performance', label: 'Performa', icon: Gauge },
   { id: 'sqlexplorer', path: '/sql', label: 'SQL', icon: Code2 },
+  { id: 'materializedview', path: '/materialized-view', label: 'Materialized View', icon: DatabaseZap },
 ];
 
 export const Navbar: React.FC = () => {
@@ -25,6 +26,7 @@ export const Navbar: React.FC = () => {
   const currentTab = () => {
     const p = location.pathname;
     if (p.startsWith('/comparison') || p.startsWith('/bandingkan')) return 'comparison';
+    if (p.startsWith('/materialized-view') || p.startsWith('/materializedview')) return 'materializedview';
     if (p.startsWith('/performance') || p.startsWith('/performa')) return 'perflab';
     if (p.startsWith('/sql')) return 'sqlexplorer';
     return 'playground';

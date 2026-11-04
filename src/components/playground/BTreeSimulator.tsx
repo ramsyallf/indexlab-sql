@@ -25,7 +25,7 @@ const OP_OPTIONS: Array<{ value: Op; label: string }> = [
   { value: 'search', label: 'Cari' },
   { value: 'range', label: 'Range' },
   { value: 'insert', label: 'Insert' },
-  { value: 'sort', label: 'ORDER BY' },
+  { value: 'sort', label: 'Order By' },
   { value: 'delete', label: 'Delete' },
 ];
 

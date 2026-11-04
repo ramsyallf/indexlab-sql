@@ -3,6 +3,7 @@ import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
 import { Navbar } from './components/layout/Navbar';
 import { IndexPlaygroundView } from './components/playground/IndexPlaygroundView';
 import { IndexComparisonView } from './components/comparison/IndexComparisonView';
+import { MaterializedViewPage } from './components/materializedview/MaterializedViewPage';
 import { PerformanceLabView } from './components/perflab/PerformanceLabView';
 import { SqlExplorerView } from './components/sqlexplorer/SqlExplorerView';
 
@@ -35,6 +36,8 @@ function AnimatedAppRoutes() {
               <Route path="/playground/:indexId" element={<IndexPlaygroundView />} />
               <Route path="/comparison" element={<IndexComparisonView />} />
               <Route path="/bandingkan" element={<Navigate to="/comparison" replace />} />
+              <Route path="/materialized-view" element={<MaterializedViewPage />} />
+              <Route path="/materializedview" element={<Navigate to="/materialized-view" replace />} />
               <Route path="/performance" element={<PerformanceLabView />} />
               <Route path="/performa" element={<Navigate to="/performance" replace />} />
               <Route path="/sql" element={<SqlExplorerView />} />
